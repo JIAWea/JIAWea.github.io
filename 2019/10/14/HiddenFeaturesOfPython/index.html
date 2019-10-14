@@ -6,20 +6,20 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>关于我 | Ray的博客</title>
+  <title>Python进阶用法 | Ray的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="记录学习的点点滴滴…">
-<meta name="keywords" content="介绍">
+  <meta name="description" content="使用Python来编写也有很长一段时间了，也想着如何优化自己的代码，随之也搜了一些问题。其中印象比较深刻的就是stackoverflow上的一个问题解答了。">
+<meta name="keywords" content="Python">
 <meta property="og:type" content="article">
-<meta property="og:title" content="关于我">
-<meta property="og:url" content="http://yoursite.com/2019/09/23/index/index.html">
+<meta property="og:title" content="Python进阶用法">
+<meta property="og:url" content="http://yoursite.com/2019/10/14/HiddenFeaturesOfPython/index.html">
 <meta property="og:site_name" content="Ray的博客">
-<meta property="og:description" content="记录学习的点点滴滴…">
+<meta property="og:description" content="使用Python来编写也有很长一段时间了，也想着如何优化自己的代码，随之也搜了一些问题。其中印象比较深刻的就是stackoverflow上的一个问题解答了。">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2019-09-23T03:53:51.679Z">
+<meta property="og:updated_time" content="2019-10-14T06:28:06.931Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="关于我">
-<meta name="twitter:description" content="记录学习的点点滴滴…">
+<meta name="twitter:title" content="Python进阶用法">
+<meta name="twitter:description" content="使用Python来编写也有很长一段时间了，也想着如何优化自己的代码，随之也搜了一些问题。其中印象比较深刻的就是stackoverflow上的一个问题解答了。">
   
   
     <link rel="icon" href="/favicon.png">
@@ -147,27 +147,48 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-index" class="article article-type-post " itemscope itemprop="blogPost">
+            <article id="post-HiddenFeaturesOfPython" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
       <header class="article-header">
         
   
     <h1 class="article-title" itemprop="name">
-      关于我
+      Python进阶用法
     </h1>
   
 
         
-        <a href="/2019/09/23/index/" class="archive-article-date">
-  	<time datetime="2019-09-23T01:47:23.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-09-23</time>
+        <a href="/2019/10/14/HiddenFeaturesOfPython/" class="archive-article-date">
+  	<time datetime="2019-10-14T02:58:14.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2019-10-14</time>
 </a>
         
       </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>记录学习的点点滴滴…</p>
+        <p>使用Python来编写也有很长一段时间了，也想着如何优化自己的代码，随之也搜了一些问题。<br>其中印象比较深刻的就是stackoverflow上的一个问题解答了。</p>
+<a id="more"></a>
+<p>原文：<a href="https://stackoverflow.com/questions/101268/hidden-features-of-python" target="_blank" rel="noopener">Hidden features of Python</a></p>
+<p><strong>Argument Unpacking</strong><br>可以使用 * 和 ** 分别将一个列表和一个字典解包为函数参数<br>如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">def draw_point(x, y):</span><br><span class="line">	# do something</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">tuple = (6, 8)</span><br><span class="line">dir = &#123;&apos;x&apos;: 6, &apos;y&apos;: 8&#125;</span><br><span class="line"></span><br><span class="line">draw_point(*tuple)</span><br><span class="line">draw_point(**dir)</span><br></pre></td></tr></table></figure></p>
+<p><strong>Decorators</strong><br>装饰器的作用就是在不需要修改原函数代码的前提下增加新的功能，在调用原函数的时候先执行装饰器，如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">def print_before_func(func):</span><br><span class="line">	def wrapper(*args, **kwargs):</span><br><span class="line">		print(&quot;print before func&quot;)</span><br><span class="line">		return func(*args, **kwargs)</span><br><span class="line">	return wrapper</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">@print_befor_func</span><br><span class="line">def write(text):</span><br><span class="line">	print(text)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">write(Hello world)</span><br><span class="line"></span><br><span class="line">结果：</span><br><span class="line">print before func</span><br><span class="line">Hello world</span><br></pre></td></tr></table></figure></p>
+<p><strong>Dictionary default .get value</strong><br>字典中有一个<code>get()</code>方法。如果你使用<code>dict[&#39;key&#39;]</code>的方式而<code>key</code>不存在的话就会出现异常。使用<code>dict.get(&#39;key&#39;)</code>的话如果<code>key</code>不存在则只会返回<code>None</code>。当然<code>get()</code>方法提供了第二个参数，如果返回<code>None</code>则会返回第二个参数的值。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">num = dict.get(&apos;num&apos;, 0)</span><br></pre></td></tr></table></figure></p>
+<p><strong>Enumeration</strong><br>使用enumeration包住一个可迭代对象，它会将index和item绑在一起，返回一个enumeration对象，如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">a = [&apos;a&apos;, &apos;b&apos;, &apos;c&apos;, &apos;d&apos;]</span><br><span class="line">for index, item in enumeration(a):</span><br><span class="line">	print(index, item)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">···</span><br><span class="line">0 a</span><br><span class="line">1 b</span><br><span class="line">2 c</span><br><span class="line">3 d</span><br><span class="line">···</span><br></pre></td></tr></table></figure></p>
+<p>在同时需要索引和值的时候很有用</p>
+<p><strong>For/else</strong><br>语法如下：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">for i in foo:</span><br><span class="line">	if i == 0:</span><br><span class="line">		break</span><br><span class="line">else:</span><br><span class="line">	print(&quot;it was never 0&quot;)</span><br></pre></td></tr></table></figure></p>
+<p><code>else</code>代码块会在循环正常结束后执行，也就是说没用出现<code>break</code>时才会调用<code>else</code>代码块，上面代码等价于:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">found = False</span><br><span class="line">for i in foo:</span><br><span class="line">	if i == 0:</span><br><span class="line">		found = True</span><br><span class="line">		break</span><br><span class="line"></span><br><span class="line">if not found:</span><br><span class="line">	print(&quot;it was never 0&quot;)</span><br></pre></td></tr></table></figure></p>
+<p>这个语法挺容易让人混淆的，所有在使用的时候最好是注释一下，以免被其他小伙伴搞错含义了。</p>
+<p>上面的代码也等价于：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if any(i == 0 for i in foo):</span><br><span class="line">	pass</span><br><span class="line">else:</span><br><span class="line">	print(&quot;it was never 0&quot;)</span><br></pre></td></tr></table></figure></p>
+<p><strong>Generator expressions</strong><br>假如你这样写：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x = (n for n in foo if bar(n))</span><br></pre></td></tr></table></figure></p>
+<p>你将会得到一个生成器，并可以把它付给一个变量x。现在你可以像下面一样使用生成器：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">for n in x:</span><br><span class="line">	print(n)</span><br></pre></td></tr></table></figure></p>
+<p>这样做的好处就是节省内存了。你不需要中间存储，而如果像下面这样的话，则需要：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x = [n for n in foo if bar(n)]</span><br><span class="line"># 列表推导</span><br></pre></td></tr></table></figure></p>
+<p>在某些情况下，这会导致极重要的速度提升。<br>你可以添加许多if语句到生成器的尾端，基本复制for循环嵌套：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; n = ((a,b) for a in range(0,2) for b in range(4,6))</span><br><span class="line">&gt;&gt;&gt; for i in n:</span><br><span class="line">...   print i </span><br><span class="line"></span><br><span class="line">(0, 4)</span><br><span class="line">(0, 5)</span><br><span class="line">(1, 4)</span><br><span class="line">(1, 5)</span><br></pre></td></tr></table></figure></p>
+<p>使用生成器最大的好处就是节省内存了。因为每一个值只有在你需要的时候才会生成，而不像列表推导那样一次性生成所有的结果。</p>
+<p><strong>List stepping</strong><br>切片操作符中的步长(step)参数。例如：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">a = [1,2,3,4,5]</span><br><span class="line">&gt;&gt;&gt; a[::2]  		# iterate over the whole list in 2-increments</span><br><span class="line">[1,3,5]</span><br></pre></td></tr></table></figure></p>
+<p>特殊例子<code>x[::-1]</code>对‘x反转’来说相当有用。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; a[::-1]</span><br><span class="line">[5,4,3,2,1]</span><br></pre></td></tr></table></figure></p>
+<p>当然，你可以使用<code>reversed()</code>函数来实现反转。<br>区别在于，reversed()返回一个迭代器，所以还需要一个额外的步骤来将结果转换成需要的对象类型。<br>这个特性在判断例如回文的时候灰常有用，一句话搞定<br><code>True if someseq == someseq[::-1] else False</code></p>
+<p><strong>Named string formatting</strong><br>%-格式化接收一个字典（也适用于%i%s等）<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; print &quot;The %(foo)s is %(bar)i.&quot; % &#123;&apos;foo&apos;: &apos;answer&apos;, &apos;bar&apos;:42&#125;</span><br><span class="line">The answer is 42.</span><br></pre></td></tr></table></figure></p>
+<p><strong>try/except/else</strong><br>else语句块只有当try语句正常执行（也就是说，except语句未执行）的时候，才会执行。<br>finally则无论是否异常都会执行。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">try:</span><br><span class="line">     Normal execution block</span><br><span class="line">except A:</span><br><span class="line">     Exception A handle</span><br><span class="line">except B:</span><br><span class="line">     Exception B handle</span><br><span class="line">except:</span><br><span class="line">     Other exception handle</span><br><span class="line">else:</span><br><span class="line">     if no exception,get here</span><br><span class="line">finally:</span><br><span class="line">     this block will be excuted no matter how it goes above</span><br></pre></td></tr></table></figure></p>
 
       
 
@@ -181,7 +202,7 @@
 		<ul class="article-tag-list">
 			 
         		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">介绍</a>
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Python</a>
         		</li>
       		
 		</ul>
@@ -237,7 +258,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2019/09/23/index/" alt="微信分享二维码">
+      <img src="//pan.baidu.com/share/qrcode?url=http://yoursite.com/2019/10/14/HiddenFeaturesOfPython/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -251,15 +272,11 @@
   
 <nav id="article-nav">
   
-    <a href="/2019/09/23/asyncio/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          初识Python asyncio异步编程
-        
-      </div>
-    </a>
   
+    <a href="/2019/09/25/go_mod/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">告别GOPATH,使用go mod</div>
+      <i class="icon-circle-right"></i>
+    </a>
   
 </nav>
 
