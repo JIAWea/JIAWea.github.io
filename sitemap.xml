@@ -2,9 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://yoursite.com/2019/12/10/Docker-volume/</loc>
+    
+    <lastmod>2019-12-10T03:50:06.536Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://yoursite.com/2019/11/08/Algorithm-SeqList/</loc>
     
-    <lastmod>2019-11-08T02:57:57.433Z</lastmod>
+    <lastmod>2019-11-08T02:59:10.555Z</lastmod>
     
   </url>
   
