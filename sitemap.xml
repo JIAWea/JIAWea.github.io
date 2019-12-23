@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://yoursite.com/2019/09/23/index/</loc>
+    
+    <lastmod>2019-12-23T03:07:14.053Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://yoursite.com/2019/12/10/Algorithm-linked-list/</loc>
     
     <lastmod>2019-12-17T07:54:41.502Z</lastmod>
@@ -54,13 +61,6 @@
     <loc>http://yoursite.com/2019/10/14/HiddenFeaturesOfPython/</loc>
     
     <lastmod>2019-10-14T06:28:06.931Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>http://yoursite.com/2019/09/23/index/</loc>
-    
-    <lastmod>2019-09-23T03:53:51.679Z</lastmod>
     
   </url>
   
