@@ -19,7 +19,7 @@
 <meta property="og:image" content="https://img-blog.csdnimg.cn/20191111093914440.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0pJQVdFQQ==,size_16,color_FFFFFF,t_70">
 <meta property="og:image" content="https://img-blog.csdnimg.cn/20191111094236680.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0pJQVdFQQ==,size_16,color_FFFFFF,t_70">
 <meta property="og:image" content="https://img-blog.csdnimg.cn/20191111094413665.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0pJQVdFQQ==,size_16,color_FFFFFF,t_70">
-<meta property="og:updated_time" content="2020-01-20T09:41:49.252Z">
+<meta property="og:updated_time" content="2020-04-27T01:18:16.353Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="算法之链表">
 <meta name="twitter:description" content="单向链表单向链表也叫单链表，是链表中最简单的一种形式，它的每个节点包含两个域，一个信息域（元素域）和一个链接域。这个链接指向链表中的下一个节点，而最后一个节点的链接域则指向一个空值。">
@@ -171,13 +171,16 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="单向链表"><a href="#单向链表" class="headerlink" title="单向链表"></a>单向链表</h2><p>单向链表也叫单链表，是链表中最简单的一种形式，它的每个节点包含两个域，一个信息域（元素域）和一个链接域。这个链接指向链表中的下一个节点，而最后一个节点的链接域则指向一个空值。<br><a id="more"></a><br><img src="https://img-blog.csdnimg.cn/20191111093914440.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0pJQVdFQQ==,size_16,color_FFFFFF,t_70" alt="单向链表"></p>
+        <h2 id="单向链表"><a href="#单向链表" class="headerlink" title="单向链表"></a>单向链表</h2><p>单向链表也叫单链表，是链表中最简单的一种形式，它的每个节点包含两个域，一个信息域（元素域）和一个链接域。这个链接指向链表中的下一个节点，而最后一个节点的链接域则指向一个空值。<br><a id="more"></a></p>
+<p><center><img src="https://img-blog.csdnimg.cn/20191111093914440.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0pJQVdFQQ==,size_16,color_FFFFFF,t_70" alt="单向链表"></center></p>
 <ul>
 <li>表元素域elem用来存放具体的数据。</li>
 <li>链接域next用来存放下一个节点的位置（python中的标识）</li>
 <li>变量p指向链表的头节点（首节点）的位置，从p出发能找到表中的任意节点。</li>
 </ul>
-<p><strong>下面引用算法图解一书中的链表：</strong><br>链表中的元素可存储在内存的任何地方。<br><img src="https://img-blog.csdnimg.cn/20191111094236680.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0pJQVdFQQ==,size_16,color_FFFFFF,t_70" alt="链表在内存"><br>链表的每个元素都存储了下一个元素的地址，从而使一系列随机的内存地址串在一起。<br><img src="https://img-blog.csdnimg.cn/20191111094413665.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0pJQVdFQQ==,size_16,color_FFFFFF,t_70" alt="串在一起的链表"><br>这犹如寻宝游戏。你前往第一个地址，那里有一张纸条写着“下一个元素的地址为123”。因此，你前往地址123，那里又有一张纸条写着“下一个元素的地址为668”。在链表中添加元素很容易：只需将其放入内存，并将其地址存储到前一个元素中。</p>
+<p><strong>下面引用算法图解一书中的链表：</strong><br>链表中的元素可存储在内存的任何地方。</p>
+<p><center><img src="https://img-blog.csdnimg.cn/20191111094236680.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0pJQVdFQQ==,size_16,color_FFFFFF,t_70" alt="链表在内存"></center><br>链表的每个元素都存储了下一个元素的地址，从而使一系列随机的内存地址串在一起。</p>
+<p><center><img src="https://img-blog.csdnimg.cn/20191111094413665.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L0pJQVdFQQ==,size_16,color_FFFFFF,t_70" alt="串在一起的链表"></center><br>这犹如寻宝游戏。你前往第一个地址，那里有一张纸条写着“下一个元素的地址为123”。因此，你前往地址123，那里又有一张纸条写着“下一个元素的地址为668”。在链表中添加元素很容易：只需将其放入内存，并将其地址存储到前一个元素中。</p>
 <h2 id="链表与顺序表的对比"><a href="#链表与顺序表的对比" class="headerlink" title="链表与顺序表的对比"></a>链表与顺序表的对比</h2><p>链表失去了顺序表随机读取的优点，同时链表由于增加了结点的指针域，空间开销比较大，但对存储空间的使用要相对灵活。</p>
 <p>链表与顺序表的各种操作复杂度如下所示：<br>操作| 链表|  顺序表<br>-|-|-<br>访问元素| O(n) | O(1) |<br>在头部插入/删除|  O(1)  | O(n) |<br>在尾部插入/删除| O(n) |  O(1)  |<br>在中间插入/删除| O(n) | O(n) |</p>
 <p>注意虽然表面看起来复杂度都是 O(n)，但是链表和顺序表在插入和删除时进行的是完全不同的操作。链表的主要耗时操作是遍历查找，删除和插入操作本身的复杂度是O(1)。顺序表查找很快，主要耗时的操作是拷贝覆盖。因为除了目标元素在尾部的特殊情况，顺序表进行插入和删除时需要对操作点之后的所有元素进行前后移位操作，只能通过拷贝和覆盖的方法进行。</p>

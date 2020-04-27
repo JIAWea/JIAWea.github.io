@@ -18,7 +18,7 @@
 <meta property="og:locale" content="en">
 <meta property="og:image" content="http://yoursite.com/static/blogImg/HTTP_Messages.png">
 <meta property="og:image" content="http://yoursite.com/static/blogImg/HTTP_Request_Headers2.png">
-<meta property="og:updated_time" content="2020-03-27T03:39:25.551Z">
+<meta property="og:updated_time" content="2020-04-27T01:20:30.690Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="HTTP报文理解">
 <meta name="twitter:description" content="HTTP报文携带着HTTP协议交互的信息，可以理解为它为搬东西的包裹，来搬运交换的信息。其中有两种类型的报文，一是客户端发送的请求到服务器的HTTP报文叫做请求报文，二是服务器响应给客户端的叫响应报文。">
@@ -171,9 +171,10 @@
     <div class="article-entry" itemprop="articleBody">
       
         <p>HTTP报文携带着HTTP协议交互的信息，可以理解为它为搬东西的包裹，来搬运交换的信息。<br>其中有两种类型的报文，一是客户端发送的请求到服务器的HTTP报文叫做请求报文，二是服务器响应给客户端的叫响应报文。</p>
+<center><img src="/static/blogImg/HTTP_Messages.png" alt="avatar"></center>
+
 <a id="more"></a>
-<h3 id="请求报文组成部分"><a href="#请求报文组成部分" class="headerlink" title="请求报文组成部分"></a>请求报文组成部分</h3><p><img src="/static/blogImg/HTTP_Messages.png" alt="avatar"></p>
-<p>HTTP 报文大致可分为请求行、请求头、空行、请求主体四部分。</p>
+<h3 id="请求报文组成部分"><a href="#请求报文组成部分" class="headerlink" title="请求报文组成部分"></a>请求报文组成部分</h3><p>HTTP 报文大致可分为请求行、请求头、空行、请求主体四部分。</p>
 <ul>
 <li>请求行</li>
 <li>请求头</li>
@@ -187,7 +188,9 @@
 <li>POST: 对于不适合使用GET方式的情况（比如账号登录），可以使用POST方式，因为使用POST方法可以允许客户端给服务器提供信息较多。POST方法将请求参数封装在HTTP请求数据中，以“键：值”的形式出现，可以传输大量数据，这样POST方式对传送的数据大小没有限制，而且也不会显示在URL中。</li>
 <li>HEAD: HEAD就像GET，只不过服务端接受到HEAD请求后只返回响应头，而不会发送响应内容。当我们只需要查看某个页面的状态的时候，使用HEAD是非常高效的，因为在传输的过程中省去了页面内容。</li>
 </ul>
-<p><strong>请求头部</strong><br><img src="/static/blogImg/HTTP_Request_Headers2.png" alt="avatar"></p>
+<p><strong>请求头部</strong></p>
+<center><img src="/static/blogImg/HTTP_Request_Headers2.png" alt="avatar"></center>
+
 <p>请求头部由键值对组成，每行一对，关键字和值用英文冒号“:”分隔。请求头部通知服务器有关于客户端请求的信息，典型的请求头有：</p>
 <ul>
 <li>User-Agent：产生请求的浏览器类型。</li>

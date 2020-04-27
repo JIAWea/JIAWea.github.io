@@ -16,14 +16,15 @@
 <meta property="og:site_name" content="Ray的博客">
 <meta property="og:description" content="RPC（Remote Procedure Call Protocol）—— 远程过程调用协议，它是一种通过网络从远程计算机程序上请求服务，而不需要了解底层网络技术的协议。 ​简单来说，就是跟远程访问或者web请求差不多，都是一个client向远端服务器请求服务返回结果，但是web请求使用的网络协议是http高层协议，而rpc所使用的协议多为TCP，是网络层协议，减少了信息的包装，加快了处理速度。">
 <meta property="og:locale" content="en">
+<meta property="og:image" content="http://yoursite.com/static/blogImg/RemoteProcedureCall.png">
 <meta property="og:image" content="http://yoursite.com/static/blogImg/RPC-client.jpg">
 <meta property="og:image" content="http://yoursite.com/static/blogImg/RPC-service.jpg">
 <meta property="og:image" content="http://yoursite.com/static/blogImg/RPC.jpg">
-<meta property="og:updated_time" content="2020-03-27T03:39:19.513Z">
+<meta property="og:updated_time" content="2020-04-27T01:16:17.640Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="RPC是什么">
 <meta name="twitter:description" content="RPC（Remote Procedure Call Protocol）—— 远程过程调用协议，它是一种通过网络从远程计算机程序上请求服务，而不需要了解底层网络技术的协议。 ​简单来说，就是跟远程访问或者web请求差不多，都是一个client向远端服务器请求服务返回结果，但是web请求使用的网络协议是http高层协议，而rpc所使用的协议多为TCP，是网络层协议，减少了信息的包装，加快了处理速度。">
-<meta name="twitter:image" content="http://yoursite.com/static/blogImg/RPC-client.jpg">
+<meta name="twitter:image" content="http://yoursite.com/static/blogImg/RemoteProcedureCall.png">
   
   
     <link rel="icon" href="/favicon.png">
@@ -173,6 +174,8 @@
       
         <p>RPC（Remote Procedure Call Protocol）—— 远程过程调用协议，它是一种通过网络从远程计算机程序上请求服务，而不需要了解底层网络技术的协议。</p>
 <p>​简单来说，就是跟远程访问或者web请求差不多，都是一个client向远端服务器请求服务返回结果，但是web请求使用的网络协议是<code>http</code>高层协议，而<code>rpc</code>所使用的协议多为<code>TCP</code>，是网络层协议，减少了信息的包装，加快了处理速度。</p>
+<center><img src="/static/blogImg/RemoteProcedureCall.png" alt="client"></center>
+
 <a id="more"></a>
 <p>说起<code>RPC</code>，就不能不提到<code>分布式</code>（促使RPC诞生的领域）。</p>
 <h3 id="举个栗子"><a href="#举个栗子" class="headerlink" title="举个栗子.."></a>举个栗子..</h3><p>假如你实现了一个计算器接口，Caculator，以及它实现类CalculatorImpl，那么在系统还是单位应用时，只需要new一个CalculatorImpl，然后直接调用其方法，例如<code>add</code>，<code>times</code>等就可以了，这就是普通的<code>本地调用</code>，因为在同一个地址空间/同一块内存。</p>
@@ -192,9 +195,15 @@
 <li>远程服务器收到调用后，远程机器的<code>RPC</code>框架获取二进制数据后反序列化出来，并根据调用信息定位到实现要执行的方法，执行完后序列化结果，通过网络传输把执行结果发送回本地机器。</li>
 <li>本地机器的<code>RPC</code>框架反序列化出执行结果。</li>
 </ol>
-<p>Client端（本地机器）：<br><img src="/static/blogImg/RPC-client.jpg" alt="client"></p>
-<p>Service端（远程机器）：<br><img src="/static/blogImg/RPC-service.jpg" alt="service"></p>
-<p>总体流程：<br><img src="/static/blogImg/RPC.jpg" alt="rpc"></p>
+<p>Client端（本地机器）：</p>
+<center><img src="/static/blogImg/RPC-client.jpg" alt="client"></center>
+
+<p>Service端（远程机器）：</p>
+<center><img src="/static/blogImg/RPC-service.jpg" alt="service"></center>
+
+<p>总体流程：</p>
+<center><img src="/static/blogImg/RPC.jpg" alt="rpc"></center>
+
 <h3 id="问题"><a href="#问题" class="headerlink" title="问题"></a>问题</h3><p>如何解决通讯问题？<br>客户端和服务器之前建立<code>TPC</code>连接，远程过程调用的所有交换数据都在这个连接里传输。连接可以是按需连接，调用结束后断开链接。</p>
 <p>如何解决寻址问题？<br>客户端机器应用要怎么告诉底层<code>RPC</code>框架，如何连接到服务端机器（主机/IP、端口），方法名称是什么，这样才能调用。</p>
 
