@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://yoursite.com/2020/05/08/MySQL/</loc>
+    
+    <lastmod>2020-05-08T04:03:54.387Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://yoursite.com/2019/12/10/Docker-volume/</loc>
     
     <lastmod>2020-04-27T01:26:02.217Z</lastmod>
