@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="http://yoursite.com/"/>
-  <updated>2020-05-27T09:44:48.017Z</updated>
+  <updated>2020-05-27T09:47:51.243Z</updated>
   <id>http://yoursite.com/</id>
   
   <author>
@@ -21,20 +21,17 @@
     <link href="http://yoursite.com/2020/05/27/Go_variable/"/>
     <id>http://yoursite.com/2020/05/27/Go_variable/</id>
     <published>2020-05-27T01:00:26.000Z</published>
-    <updated>2020-05-27T09:44:48.017Z</updated>
+    <updated>2020-05-27T09:47:51.243Z</updated>
     
-    <content type="html"><![CDATA[<p><strong>值类型和引用类型</strong></p><ul><li>值类型：变量直接存储，内存通常在栈中分配。</li><li>引用类型：变量存储的是一个地址，这个地址存储最终的值。内存通常在堆上分配。通过GC回收</li></ul><p>PS : 通常在函数中转入指针效率比较高，因为方法中的参数是需要进行拷贝的，拷贝指针的效率比较高，要是一个大的接口体的话拷贝的效率就比较低</p><p><strong>GoLang中的值类型和引用类型</strong></p><ol><li>值类型 ： 基本数据类型int、float、bool、string以及数组和struct。</li><li>引用类型：指针、slice、map、chan等都是引用类型</li></ol>]]></content>
+    <content type="html"><![CDATA[<h3 id="值类型和引用类型"><a href="#值类型和引用类型" class="headerlink" title="值类型和引用类型"></a>值类型和引用类型</h3><ul><li>值类型：变量直接存储，内存通常在栈中分配。</li><li>引用类型：变量存储的是一个地址，这个地址存储最终的值。内存通常在堆上分配。通过GC回收</li></ul><p>PS : 通常在函数中转入指针效率比较高，因为方法中的参数是需要进行拷贝的，拷贝指针的效率比较高，要是一个大的接口体的话拷贝的效率就比较低</p><h3 id="GoLang中的值类型和引用类型"><a href="#GoLang中的值类型和引用类型" class="headerlink" title="GoLang中的值类型和引用类型"></a>GoLang中的值类型和引用类型</h3><ol><li>值类型 ： 基本数据类型int、float、bool、string以及数组和struct。</li><li>引用类型：指针、slice、map、chan等都是引用类型</li></ol>]]></content>
     
     <summary type="html">
     
       
       
-        &lt;p&gt;&lt;strong&gt;值类型和引用类型&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
+        &lt;h3 id=&quot;值类型和引用类型&quot;&gt;&lt;a href=&quot;#值类型和引用类型&quot; class=&quot;headerlink&quot; title=&quot;值类型和引用类型&quot;&gt;&lt;/a&gt;值类型和引用类型&lt;/h3&gt;&lt;ul&gt;
 &lt;li&gt;值类型：变量直接存储，内存通常在栈中分配。&lt;/li&gt;
-&lt;li&gt;引用类型：变量存储的是一个地址，这个地址存储最终的值。内存通常在堆上分配。通过GC回收&lt;/li&gt;
-&lt;/ul&gt;
-&lt;p&gt;PS : 通常在函
+&lt;li&gt;引用类型：变量存储
       
     
     </summary>
