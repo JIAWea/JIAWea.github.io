@@ -2,6 +2,20 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>http://yoursite.com/2020/05/27/Go_variable/</loc>
+    
+    <lastmod>2020-05-27T09:44:48.017Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>http://yoursite.com/2020/05/24/Redis/</loc>
+    
+    <lastmod>2020-05-27T09:41:31.268Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>http://yoursite.com/2020/05/08/MySQL/</loc>
     
     <lastmod>2020-05-08T04:03:54.387Z</lastmod>
