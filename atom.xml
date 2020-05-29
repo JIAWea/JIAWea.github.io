@@ -5,9 +5,9 @@
   <subtitle>Keep coding...</subtitle>
   <link href="/atom.xml" rel="self"/>
   
-  <link href="http://yoursite.com/"/>
+  <link href="https://jiawea.github.io/"/>
   <updated>2020-05-27T09:47:51.243Z</updated>
-  <id>http://yoursite.com/</id>
+  <id>https://jiawea.github.io/</id>
   
   <author>
     <name>Ray Wong</name>
@@ -18,8 +18,8 @@
   
   <entry>
     <title>Golang的值类型和引用类型</title>
-    <link href="http://yoursite.com/2020/05/27/Go_variable/"/>
-    <id>http://yoursite.com/2020/05/27/Go_variable/</id>
+    <link href="https://jiawea.github.io/2020/05/27/Go_variable/"/>
+    <id>https://jiawea.github.io/2020/05/27/Go_variable/</id>
     <published>2020-05-27T01:00:26.000Z</published>
     <updated>2020-05-27T09:47:51.243Z</updated>
     
@@ -37,18 +37,18 @@
     </summary>
     
     
-      <category term="Golang" scheme="http://yoursite.com/tags/Golang/"/>
+      <category term="Golang" scheme="https://jiawea.github.io/tags/Golang/"/>
     
-      <category term="值类型" scheme="http://yoursite.com/tags/%E5%80%BC%E7%B1%BB%E5%9E%8B/"/>
+      <category term="值类型" scheme="https://jiawea.github.io/tags/%E5%80%BC%E7%B1%BB%E5%9E%8B/"/>
     
-      <category term="引用类型" scheme="http://yoursite.com/tags/%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B/"/>
+      <category term="引用类型" scheme="https://jiawea.github.io/tags/%E5%BC%95%E7%94%A8%E7%B1%BB%E5%9E%8B/"/>
     
   </entry>
   
   <entry>
     <title>Redis类型及应用场景</title>
-    <link href="http://yoursite.com/2020/05/24/Redis/"/>
-    <id>http://yoursite.com/2020/05/24/Redis/</id>
+    <link href="https://jiawea.github.io/2020/05/24/Redis/"/>
+    <id>https://jiawea.github.io/2020/05/24/Redis/</id>
     <published>2020-05-24T04:26:00.000Z</published>
     <updated>2020-05-27T09:41:31.268Z</updated>
     
@@ -69,16 +69,16 @@
     </summary>
     
     
-      <category term="redis" scheme="http://yoursite.com/tags/redis/"/>
+      <category term="redis" scheme="https://jiawea.github.io/tags/redis/"/>
     
-      <category term="NoSQL" scheme="http://yoursite.com/tags/NoSQL/"/>
+      <category term="NoSQL" scheme="https://jiawea.github.io/tags/NoSQL/"/>
     
   </entry>
   
   <entry>
     <title>MySQL优化</title>
-    <link href="http://yoursite.com/2020/05/08/MySQL/"/>
-    <id>http://yoursite.com/2020/05/08/MySQL/</id>
+    <link href="https://jiawea.github.io/2020/05/08/MySQL/"/>
+    <id>https://jiawea.github.io/2020/05/08/MySQL/</id>
     <published>2020-05-08T01:30:18.000Z</published>
     <updated>2020-05-08T04:03:54.387Z</updated>
     
@@ -97,14 +97,14 @@
     </summary>
     
     
-      <category term="MySQL" scheme="http://yoursite.com/tags/MySQL/"/>
+      <category term="MySQL" scheme="https://jiawea.github.io/tags/MySQL/"/>
     
   </entry>
   
   <entry>
     <title>HTTP和WebSocket协议的区别</title>
-    <link href="http://yoursite.com/2020/04/11/Http_WebSocket/"/>
-    <id>http://yoursite.com/2020/04/11/Http_WebSocket/</id>
+    <link href="https://jiawea.github.io/2020/04/11/Http_WebSocket/"/>
+    <id>https://jiawea.github.io/2020/04/11/Http_WebSocket/</id>
     <published>2020-04-11T07:30:00.000Z</published>
     <updated>2020-04-27T01:22:49.349Z</updated>
     
@@ -117,18 +117,18 @@
     </summary>
     
     
-      <category term="HTTP" scheme="http://yoursite.com/tags/HTTP/"/>
+      <category term="HTTP" scheme="https://jiawea.github.io/tags/HTTP/"/>
     
-      <category term="WebSocket" scheme="http://yoursite.com/tags/WebSocket/"/>
+      <category term="WebSocket" scheme="https://jiawea.github.io/tags/WebSocket/"/>
     
-      <category term="TCP" scheme="http://yoursite.com/tags/TCP/"/>
+      <category term="TCP" scheme="https://jiawea.github.io/tags/TCP/"/>
     
   </entry>
   
   <entry>
     <title>RPC是什么</title>
-    <link href="http://yoursite.com/2020/03/27/WHAT-IS-RPC/"/>
-    <id>http://yoursite.com/2020/03/27/WHAT-IS-RPC/</id>
+    <link href="https://jiawea.github.io/2020/03/27/WHAT-IS-RPC/"/>
+    <id>https://jiawea.github.io/2020/03/27/WHAT-IS-RPC/</id>
     <published>2020-03-27T02:28:49.000Z</published>
     <updated>2020-04-27T01:16:17.640Z</updated>
     
@@ -143,14 +143,14 @@
     </summary>
     
     
-      <category term="RPC" scheme="http://yoursite.com/tags/RPC/"/>
+      <category term="RPC" scheme="https://jiawea.github.io/tags/RPC/"/>
     
   </entry>
   
   <entry>
     <title>算法之链表</title>
-    <link href="http://yoursite.com/2019/12/10/Algorithm-linked-list/"/>
-    <id>http://yoursite.com/2019/12/10/Algorithm-linked-list/</id>
+    <link href="https://jiawea.github.io/2019/12/10/Algorithm-linked-list/"/>
+    <id>https://jiawea.github.io/2019/12/10/Algorithm-linked-list/</id>
     <published>2019-12-10T04:01:36.000Z</published>
     <updated>2020-04-27T01:18:16.353Z</updated>
     
@@ -163,16 +163,16 @@
     </summary>
     
     
-      <category term="算法" scheme="http://yoursite.com/tags/%E7%AE%97%E6%B3%95/"/>
+      <category term="算法" scheme="https://jiawea.github.io/tags/%E7%AE%97%E6%B3%95/"/>
     
-      <category term="链表" scheme="http://yoursite.com/tags/%E9%93%BE%E8%A1%A8/"/>
+      <category term="链表" scheme="https://jiawea.github.io/tags/%E9%93%BE%E8%A1%A8/"/>
     
   </entry>
   
   <entry>
     <title>Docker之数据卷volume</title>
-    <link href="http://yoursite.com/2019/12/10/Docker-volume/"/>
-    <id>http://yoursite.com/2019/12/10/Docker-volume/</id>
+    <link href="https://jiawea.github.io/2019/12/10/Docker-volume/"/>
+    <id>https://jiawea.github.io/2019/12/10/Docker-volume/</id>
     <published>2019-12-10T03:48:02.000Z</published>
     <updated>2020-04-27T01:26:02.217Z</updated>
     
@@ -191,16 +191,16 @@
     </summary>
     
     
-      <category term="Docker" scheme="http://yoursite.com/tags/Docker/"/>
+      <category term="Docker" scheme="https://jiawea.github.io/tags/Docker/"/>
     
-      <category term="volume" scheme="http://yoursite.com/tags/volume/"/>
+      <category term="volume" scheme="https://jiawea.github.io/tags/volume/"/>
     
   </entry>
   
   <entry>
     <title>算法之顺序表</title>
-    <link href="http://yoursite.com/2019/11/08/Algorithm-SeqList/"/>
-    <id>http://yoursite.com/2019/11/08/Algorithm-SeqList/</id>
+    <link href="https://jiawea.github.io/2019/11/08/Algorithm-SeqList/"/>
+    <id>https://jiawea.github.io/2019/11/08/Algorithm-SeqList/</id>
     <published>2019-11-08T02:49:50.000Z</published>
     <updated>2020-04-27T01:19:05.808Z</updated>
     
@@ -214,16 +214,16 @@
     </summary>
     
     
-      <category term="算法" scheme="http://yoursite.com/tags/%E7%AE%97%E6%B3%95/"/>
+      <category term="算法" scheme="https://jiawea.github.io/tags/%E7%AE%97%E6%B3%95/"/>
     
-      <category term="顺序表" scheme="http://yoursite.com/tags/%E9%A1%BA%E5%BA%8F%E8%A1%A8/"/>
+      <category term="顺序表" scheme="https://jiawea.github.io/tags/%E9%A1%BA%E5%BA%8F%E8%A1%A8/"/>
     
   </entry>
   
   <entry>
     <title>算法之时间复杂度</title>
-    <link href="http://yoursite.com/2019/11/06/Algorithm-O/"/>
-    <id>http://yoursite.com/2019/11/06/Algorithm-O/</id>
+    <link href="https://jiawea.github.io/2019/11/06/Algorithm-O/"/>
+    <id>https://jiawea.github.io/2019/11/06/Algorithm-O/</id>
     <published>2019-11-06T02:25:36.000Z</published>
     <updated>2020-04-27T01:18:40.347Z</updated>
     
@@ -237,16 +237,16 @@
     </summary>
     
     
-      <category term="算法" scheme="http://yoursite.com/tags/%E7%AE%97%E6%B3%95/"/>
+      <category term="算法" scheme="https://jiawea.github.io/tags/%E7%AE%97%E6%B3%95/"/>
     
-      <category term="时间复杂度" scheme="http://yoursite.com/tags/%E6%97%B6%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6/"/>
+      <category term="时间复杂度" scheme="https://jiawea.github.io/tags/%E6%97%B6%E9%97%B4%E5%A4%8D%E6%9D%82%E5%BA%A6/"/>
     
   </entry>
   
   <entry>
     <title>HTTP报文理解</title>
-    <link href="http://yoursite.com/2019/10/17/HttpMessages/"/>
-    <id>http://yoursite.com/2019/10/17/HttpMessages/</id>
+    <link href="https://jiawea.github.io/2019/10/17/HttpMessages/"/>
+    <id>https://jiawea.github.io/2019/10/17/HttpMessages/</id>
     <published>2019-10-17T02:06:47.000Z</published>
     <updated>2020-04-27T01:20:30.690Z</updated>
     
@@ -260,14 +260,14 @@
     </summary>
     
     
-      <category term="HTTP" scheme="http://yoursite.com/tags/HTTP/"/>
+      <category term="HTTP" scheme="https://jiawea.github.io/tags/HTTP/"/>
     
   </entry>
   
   <entry>
     <title>Python进阶用法</title>
-    <link href="http://yoursite.com/2019/10/14/HiddenFeaturesOfPython/"/>
-    <id>http://yoursite.com/2019/10/14/HiddenFeaturesOfPython/</id>
+    <link href="https://jiawea.github.io/2019/10/14/HiddenFeaturesOfPython/"/>
+    <id>https://jiawea.github.io/2019/10/14/HiddenFeaturesOfPython/</id>
     <published>2019-10-14T02:58:14.000Z</published>
     <updated>2020-03-27T03:39:30.572Z</updated>
     
@@ -280,14 +280,14 @@
     </summary>
     
     
-      <category term="Python" scheme="http://yoursite.com/tags/Python/"/>
+      <category term="Python" scheme="https://jiawea.github.io/tags/Python/"/>
     
   </entry>
   
   <entry>
     <title>告别GOPATH,使用go mod</title>
-    <link href="http://yoursite.com/2019/09/25/go_mod/"/>
-    <id>http://yoursite.com/2019/09/25/go_mod/</id>
+    <link href="https://jiawea.github.io/2019/09/25/go_mod/"/>
+    <id>https://jiawea.github.io/2019/09/25/go_mod/</id>
     <published>2019-09-25T01:47:23.000Z</published>
     <updated>2020-03-27T03:39:37.855Z</updated>
     
@@ -300,16 +300,16 @@
     </summary>
     
     
-      <category term="Go" scheme="http://yoursite.com/tags/Go/"/>
+      <category term="Go" scheme="https://jiawea.github.io/tags/Go/"/>
     
-      <category term="mod" scheme="http://yoursite.com/tags/mod/"/>
+      <category term="mod" scheme="https://jiawea.github.io/tags/mod/"/>
     
   </entry>
   
   <entry>
     <title>初识Python asyncio异步编程</title>
-    <link href="http://yoursite.com/2019/09/23/asyncio/"/>
-    <id>http://yoursite.com/2019/09/23/asyncio/</id>
+    <link href="https://jiawea.github.io/2019/09/23/asyncio/"/>
+    <id>https://jiawea.github.io/2019/09/23/asyncio/</id>
     <published>2019-09-23T07:58:52.000Z</published>
     <updated>2019-10-14T07:20:09.816Z</updated>
     
@@ -321,19 +321,19 @@
     
     </summary>
     
-      <category term="Python" scheme="http://yoursite.com/categories/Python/"/>
+      <category term="Python" scheme="https://jiawea.github.io/categories/Python/"/>
     
     
-      <category term="异步" scheme="http://yoursite.com/tags/%E5%BC%82%E6%AD%A5/"/>
+      <category term="异步" scheme="https://jiawea.github.io/tags/%E5%BC%82%E6%AD%A5/"/>
     
-      <category term="asyncio" scheme="http://yoursite.com/tags/asyncio/"/>
+      <category term="asyncio" scheme="https://jiawea.github.io/tags/asyncio/"/>
     
   </entry>
   
   <entry>
     <title>关于我</title>
-    <link href="http://yoursite.com/2019/09/23/index/"/>
-    <id>http://yoursite.com/2019/09/23/index/</id>
+    <link href="https://jiawea.github.io/2019/09/23/index/"/>
+    <id>https://jiawea.github.io/2019/09/23/index/</id>
     <published>2019-09-23T01:47:23.000Z</published>
     <updated>2020-04-27T01:22:11.969Z</updated>
     
@@ -351,7 +351,7 @@
     </summary>
     
     
-      <category term="介绍" scheme="http://yoursite.com/tags/%E4%BB%8B%E7%BB%8D/"/>
+      <category term="介绍" scheme="https://jiawea.github.io/tags/%E4%BB%8B%E7%BB%8D/"/>
     
   </entry>
   

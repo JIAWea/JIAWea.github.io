@@ -2,105 +2,112 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>http://yoursite.com/2020/05/27/Go_variable/</loc>
+    <loc>https://jiawea.github.io/tags/index.html</loc>
+    
+    <lastmod>2020-05-29T02:50:58.208Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jiawea.github.io/2020/05/27/Go_variable/</loc>
     
     <lastmod>2020-05-27T09:47:51.243Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://yoursite.com/2020/05/24/Redis/</loc>
+    <loc>https://jiawea.github.io/2020/05/24/Redis/</loc>
     
     <lastmod>2020-05-27T09:41:31.268Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://yoursite.com/2020/05/08/MySQL/</loc>
+    <loc>https://jiawea.github.io/2020/05/08/MySQL/</loc>
     
     <lastmod>2020-05-08T04:03:54.387Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://yoursite.com/2019/12/10/Docker-volume/</loc>
+    <loc>https://jiawea.github.io/2019/12/10/Docker-volume/</loc>
     
     <lastmod>2020-04-27T01:26:02.217Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://yoursite.com/2020/04/11/Http_WebSocket/</loc>
+    <loc>https://jiawea.github.io/2020/04/11/Http_WebSocket/</loc>
     
     <lastmod>2020-04-27T01:22:49.349Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://yoursite.com/2019/09/23/index/</loc>
+    <loc>https://jiawea.github.io/2019/09/23/index/</loc>
     
     <lastmod>2020-04-27T01:22:11.969Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://yoursite.com/2019/10/17/HttpMessages/</loc>
+    <loc>https://jiawea.github.io/2019/10/17/HttpMessages/</loc>
     
     <lastmod>2020-04-27T01:20:30.690Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://yoursite.com/2019/11/08/Algorithm-SeqList/</loc>
+    <loc>https://jiawea.github.io/2019/11/08/Algorithm-SeqList/</loc>
     
     <lastmod>2020-04-27T01:19:05.808Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://yoursite.com/2019/11/06/Algorithm-O/</loc>
+    <loc>https://jiawea.github.io/2019/11/06/Algorithm-O/</loc>
     
     <lastmod>2020-04-27T01:18:40.347Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://yoursite.com/2019/12/10/Algorithm-linked-list/</loc>
+    <loc>https://jiawea.github.io/2019/12/10/Algorithm-linked-list/</loc>
     
     <lastmod>2020-04-27T01:18:16.353Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://yoursite.com/2020/03/27/WHAT-IS-RPC/</loc>
+    <loc>https://jiawea.github.io/2020/03/27/WHAT-IS-RPC/</loc>
     
     <lastmod>2020-04-27T01:16:17.640Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://yoursite.com/2019/09/25/go_mod/</loc>
+    <loc>https://jiawea.github.io/2019/09/25/go_mod/</loc>
     
     <lastmod>2020-03-27T03:39:37.855Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://yoursite.com/2019/10/14/HiddenFeaturesOfPython/</loc>
+    <loc>https://jiawea.github.io/2019/10/14/HiddenFeaturesOfPython/</loc>
     
     <lastmod>2020-03-27T03:39:30.572Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://yoursite.com/life/index.html</loc>
+    <loc>https://jiawea.github.io/life/index.html</loc>
     
     <lastmod>2020-01-16T10:43:07.352Z</lastmod>
     
   </url>
   
   <url>
-    <loc>http://yoursite.com/2019/09/23/asyncio/</loc>
+    <loc>https://jiawea.github.io/2019/09/23/asyncio/</loc>
     
     <lastmod>2019-10-14T07:20:09.816Z</lastmod>
     
