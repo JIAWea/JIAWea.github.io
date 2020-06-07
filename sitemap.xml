@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://jiawea.github.io/2019/12/10/Algorithm-linked-list/</loc>
+    
+    <lastmod>2020-06-07T08:39:36.543Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://jiawea.github.io/2019/09/25/go_mod/</loc>
     
     <lastmod>2020-06-06T06:22:04.345Z</lastmod>
@@ -12,13 +19,6 @@
     <loc>https://jiawea.github.io/2019/11/08/Algorithm-SeqList/</loc>
     
     <lastmod>2020-06-06T06:21:27.325Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://jiawea.github.io/2019/12/10/Algorithm-linked-list/</loc>
-    
-    <lastmod>2020-06-06T06:21:16.662Z</lastmod>
     
   </url>
   
