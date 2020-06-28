@@ -15,7 +15,7 @@
     <meta name="keywords" content="后端开发 全栈 Python Go">
 
 
-<title>Golang的值类型和引用类型 | Ray的博客</title>
+<title>TCP/IP协议 | Ray的博客</title>
 
 
 
@@ -176,7 +176,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">Golang的值类型和引用类型</h1>
+            <h1 class="post-title">TCP/IP协议</h1>
             
                 <div class="post-meta">
                     
@@ -185,14 +185,14 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">May 27, 2020&nbsp;&nbsp;9:00:26</a>
+                        Date: <a href="#">June 26, 2020&nbsp;&nbsp;20:28:06</a>
                         </span>
                     
                     
                         <span class="post-category">
                     Category:
                             
-                                <a href="/categories/后端/">后端</a>
+                                <a href="/categories/网络/">网络</a>
                             
                         </span>
                     
@@ -201,15 +201,25 @@
         </header>
 
         <div class="post-content">
-            <h3 id="值类型和引用类型"><a href="#值类型和引用类型" class="headerlink" title="值类型和引用类型"></a>值类型和引用类型</h3><ul>
-<li>值类型：变量直接存储，内存通常在栈中分配。</li>
-<li>引用类型：变量存储的是一个地址，这个地址存储最终的值。内存通常在堆上分配。通过GC回收</li>
+            <p>最近在准备计算机网络原理这一门课的自考，凭着大学期间学的网络知识，复习起来还是挺快的，趁着这机会，也对TCP/IP做一下总结吧。</p>
+<h3 id="一、-计算机网络体系结构分层"><a href="#一、-计算机网络体系结构分层" class="headerlink" title="一、 计算机网络体系结构分层"></a>一、 计算机网络体系结构分层</h3><center><img src="/static/network/tx1.png" alt="avatar"></center>
+
+<p>OSI模型和TCP/IP模型上有一些区别，每一层都是处理自己的事情，然后交给下一层处理。</p>
+<h3 id="二、-TCP-IP协议"><a href="#二、-TCP-IP协议" class="headerlink" title="二、 TCP/IP协议"></a>二、 TCP/IP协议</h3><p>互联网协议套件（Internet Protocol Suite，IPS）是一个网络通讯模型，以及整个网络传输协议家族，为网际网络的基础通讯架构。它通常被称为<code>TCP/IP</code>协议族（TCP/IP Protocols），简称<code>TCP/IP</code>。</p>
+<p><code>TCP</code>（传输控制协议）和<code>IP</code>（网际协议）是最先定义的两个核心协议，所以才统称为<code>TCP/IP</code>协议族</p>
+<h4 id="1-分层"><a href="#1-分层" class="headerlink" title="1.分层"></a>1.分层</h4><p>TCP/IP协议族中有一个很重要一点就是分层管理，依次为以下四层，应用层，传输层，网络层，数据链路层（也有叫网络接口层/网际层）。应用层和传输层是计算机处理的，而下面两层则是通讯设备负责。</p>
+<center><img src="/static/network/model.png" alt="avatar"></center>
+
+<p>TCP/IP分层管理是有好处的，假如互联网只有一个协议统筹，某一个地方改变设计时，就需要把所有部分都替换掉，而分层只需要把变动的层替换掉即可。</p>
+<h4 id="2-应用层"><a href="#2-应用层" class="headerlink" title="2.应用层"></a>2.应用层</h4><p>应用层是网络相关的程序为了通过网络与其他程序通信所使用的层。这个层的处理过程是应用特有的；数据从网络相关的程序以这种应用内部使用的格式进行传送，然后被编码成标准协议的格式。<br>例如我们所熟悉的：</p>
+<ul>
+<li>HTTP（万维网服务）</li>
+<li>FTP（文件传输）</li>
+<li>SMTP（电子邮件）</li>
+<li>SSH（安全远程登陆）</li>
+<li>DNS（名称<-> IP地址寻找,域名系统）</-></li>
 </ul>
-<p>PS : 通常在函数中转入指针效率比较高，因为方法中的参数是需要进行拷贝的，拷贝指针的效率比较高，要是一个大的接口体的话拷贝的效率就比较低</p>
-<h3 id="GoLang中的值类型和引用类型"><a href="#GoLang中的值类型和引用类型" class="headerlink" title="GoLang中的值类型和引用类型"></a>GoLang中的值类型和引用类型</h3><ol>
-<li>值类型 ： 基本数据类型int、float、bool、string以及数组和struct。</li>
-<li>引用类型：指针、slice、map、chan等都是引用类型</li>
-</ol>
+<p>应用层将数据编码成一个标准的应用层协议，然后将它传送到下一层（传输层）</p>
 
         </div>
 
@@ -228,11 +238,7 @@
                 <span class="tag">
                     
                     
-                        <a href="/tags/Golang/"># Golang</a>
-                    
-                        <a href="/tags/值类型/"># 值类型</a>
-                    
-                        <a href="/tags/引用类型/"># 引用类型</a>
+                        <a href="/tags/tcp-ip/"># tcp/ip</a>
                     
                         
                 </span>
@@ -245,10 +251,8 @@
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2020/06/26/TCP-IP/">TCP/IP协议</a>
             
-            
-            <a class="next" rel="next" href="/2020/05/24/Redis/">Redis类型及应用场景</a>
+            <a class="next" rel="next" href="/2020/05/27/Go_variable/">Golang的值类型和引用类型</a>
             
         </section>
 

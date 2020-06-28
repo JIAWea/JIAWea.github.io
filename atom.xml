@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://jiawea.github.io/"/>
-  <updated>2020-06-10T01:13:55.507Z</updated>
+  <updated>2020-06-28T10:04:44.032Z</updated>
   <id>https://jiawea.github.io/</id>
   
   <author>
@@ -15,6 +15,32 @@
   </author>
   
   <generator uri="http://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>TCP/IP协议</title>
+    <link href="https://jiawea.github.io/2020/06/26/TCP-IP/"/>
+    <id>https://jiawea.github.io/2020/06/26/TCP-IP/</id>
+    <published>2020-06-26T12:28:06.000Z</published>
+    <updated>2020-06-28T10:04:44.032Z</updated>
+    
+    <content type="html"><![CDATA[<p>最近在准备计算机网络原理这一门课的自考，凭着大学期间学的网络知识，复习起来还是挺快的，趁着这机会，也对TCP/IP做一下总结吧。</p><h3 id="一、-计算机网络体系结构分层"><a href="#一、-计算机网络体系结构分层" class="headerlink" title="一、 计算机网络体系结构分层"></a>一、 计算机网络体系结构分层</h3><center><img src="/static/network/tx1.png" alt="avatar"></center><p>OSI模型和TCP/IP模型上有一些区别，每一层都是处理自己的事情，然后交给下一层处理。</p><h3 id="二、-TCP-IP协议"><a href="#二、-TCP-IP协议" class="headerlink" title="二、 TCP/IP协议"></a>二、 TCP/IP协议</h3><p>互联网协议套件（Internet Protocol Suite，IPS）是一个网络通讯模型，以及整个网络传输协议家族，为网际网络的基础通讯架构。它通常被称为<code>TCP/IP</code>协议族（TCP/IP Protocols），简称<code>TCP/IP</code>。</p><p><code>TCP</code>（传输控制协议）和<code>IP</code>（网际协议）是最先定义的两个核心协议，所以才统称为<code>TCP/IP</code>协议族</p><h4 id="1-分层"><a href="#1-分层" class="headerlink" title="1.分层"></a>1.分层</h4><p>TCP/IP协议族中有一个很重要一点就是分层管理，依次为以下四层，应用层，传输层，网络层，数据链路层（也有叫网络接口层/网际层）。应用层和传输层是计算机处理的，而下面两层则是通讯设备负责。</p><center><img src="/static/network/model.png" alt="avatar"></center><p>TCP/IP分层管理是有好处的，假如互联网只有一个协议统筹，某一个地方改变设计时，就需要把所有部分都替换掉，而分层只需要把变动的层替换掉即可。</p><h4 id="2-应用层"><a href="#2-应用层" class="headerlink" title="2.应用层"></a>2.应用层</h4><p>应用层是网络相关的程序为了通过网络与其他程序通信所使用的层。这个层的处理过程是应用特有的；数据从网络相关的程序以这种应用内部使用的格式进行传送，然后被编码成标准协议的格式。<br>例如我们所熟悉的：</p><ul><li>HTTP（万维网服务）</li><li>FTP（文件传输）</li><li>SMTP（电子邮件）</li><li>SSH（安全远程登陆）</li><li>DNS（名称<-> IP地址寻找,域名系统）</-></li></ul><p>应用层将数据编码成一个标准的应用层协议，然后将它传送到下一层（传输层）</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;最近在准备计算机网络原理这一门课的自考，凭着大学期间学的网络知识，复习起来还是挺快的，趁着这机会，也对TCP/IP做一下总结吧。&lt;/p&gt;
+&lt;h3 id=&quot;一、-计算机网络体系结构分层&quot;&gt;&lt;a href=&quot;#一、-计算机网络体系结构分层&quot; class=&quot;headerlink&quot;
+      
+    
+    </summary>
+    
+      <category term="网络" scheme="https://jiawea.github.io/categories/%E7%BD%91%E7%BB%9C/"/>
+    
+    
+      <category term="tcp/ip" scheme="https://jiawea.github.io/tags/tcp-ip/"/>
+    
+  </entry>
   
   <entry>
     <title>Golang的值类型和引用类型</title>
