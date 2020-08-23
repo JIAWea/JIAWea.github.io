@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://jiawea.github.io/"/>
-  <updated>2020-06-29T02:23:25.676Z</updated>
+  <updated>2020-08-23T10:00:40.282Z</updated>
   <id>https://jiawea.github.io/</id>
   
   <author>
@@ -17,11 +17,63 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>MySQL是如何执行SQL更新语句的</title>
+    <link href="https://jiawea.github.io/2020/08/22/MySQL-Update/"/>
+    <id>https://jiawea.github.io/2020/08/22/MySQL-Update/</id>
+    <published>2020-08-22T06:27:58.000Z</published>
+    <updated>2020-08-23T10:00:40.282Z</updated>
+    
+    <content type="html"><![CDATA[<p>用了这么久数据库，却不知道数据库是如何执行我们输入的语句的，经过一番查阅后，记录下执行一条查询和更新SQL语句后，MySQL是如何工作的。</p><p>SQL语句基本的执行链路：</p><center><img src="/static/mysql/liucheng.png" alt="流程"></center><h3 id="1-查询语句是如何执行"><a href="#1-查询语句是如何执行" class="headerlink" title="1 查询语句是如何执行"></a>1 查询语句是如何执行</h3><p>一条查询语句的执行过程一般是经过连接器、分析器、优化器、执行器等功能模块，最后到达存储引擎</p><h3 id="2-更新语句是如何执行"><a href="#2-更新语句是如何执行" class="headerlink" title="2 更新语句是如何执行"></a>2 更新语句是如何执行</h3><p>一条更新语句的执行过程和查询的执行过程是一样的：<br>以执行这条SQL语句为例。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; update T set c=c+1 where ID=2;</span><br></pre></td></tr></table></figure></p><ol><li>连接器：连接数据库。</li><li>分析器：分析器通过词发和语法解析知道这是一条更新语句，</li><li>优化器：决定使用ID这个索引。</li><li>执行器：向存储引擎读取这一行数据，然后更新并写入存储引擎。</li></ol><h3 id="2-重要的日志模块：redo-log"><a href="#2-重要的日志模块：redo-log" class="headerlink" title="2 重要的日志模块：redo log"></a>2 重要的日志模块：redo log</h3><p>让我们继续以上面一条SQL语句为例，看看<code>redo log</code>是起到了什么作用。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; update T set c=c+1 where ID=2;</span><br></pre></td></tr></table></figure></p><p>MySQL在执行这条语句时，肯定是先把<code>ID=2</code>这条数据从搜索引擎中拿出来，然后修改<code>c</code>字段，写入存储引擎，最后存储引擎刷入磁盘，这没问题吧？</p><p>MySQL的基本存储结构是<code>页</code>，所以MySQL是先把这条记录所在的<code>页</code>找到，然后再把该页的数据加载到内存，在内存中找到对应的数据后修改，再刷回磁盘。</p><p><strong>问题1</strong><br>如果在内存把数据修改了，但是还没来得及刷回磁盘数据库却突然岩机了怎么办？很显然数据就丢失了，这和我们预期的不一样。</p><p><strong>如何解决</strong><br>也许你会说很简单阿，在事务提交之前写入磁盘就行了。</p><p><strong>问题2</strong><br>如果每一次更新操作都需要刷回磁盘，这整个过程<code>IO</code>成本、查找记录成本都很高。一个页有<code>16kb</code>大小，只改一点内容就操作一次磁盘，为了解决这个问题。MySQL引入了<code>WAL</code>这么一个概念（Write-Ahead Logging），先写入日志，再写磁盘，至于什么时候再写入磁盘，会有配置供我们设置。</p><p>此时就引入<code>redo log</code>，当数据修改的时候，不仅在内存中操作，还会在<code>redo log</code>中记录这次操作。当事务提交的时会将redo log日志进行刷入磁盘。当数据库岩机重启的时候，之前提交的记录都不会丢失，会恢复<code>redo log</code>中的内容到数据库，再根据<code>undo log</code>和<code>binlog</code>决定回滚还是提交数据。这个能力称为<code>crash-safe</code>。</p><p><code>redo log</code>记录的是物理变化，即内容修改（在某个数据页上做了什么修改）。它也是需要磁盘的，但它的好处是<code>顺序IO</code>，比<code>随机IO</code>快多了。</p><h3 id="3-重要的日志模块：binlog"><a href="#3-重要的日志模块：binlog" class="headerlink" title="3 重要的日志模块：binlog"></a>3 重要的日志模块：binlog</h3><p>MySQL 整体来看，其实就有两块：一块是 Server 层，它主要做的是 MySQL 功能层面的事情；还有一块是引擎层，负责存储相关的具体事宜。<code>redo log</code>是<code>InnoDB</code>引擎特有的日志，而 Server 层也有自己的日志，称为 <code>binlog</code>（归档日志）。</p><p><code>binlog</code>记录了数据库表结构和表数据变更，比如<code>update/delete/insert/truncate/create</code>。它不会记录<code>select</code>（因为这没有对表没有进行变更）。</p><p>我们可以简单理解为：存储着每条变更的SQL语句。</p><h4 id="复制和恢复数据"><a href="#复制和恢复数据" class="headerlink" title="复制和恢复数据"></a>复制和恢复数据</h4><p>主要有两个作用：</p><ul><li>MySQL在公司使用的时候往往都是一主多从结构的，从服务器需要与主服务器的数据保持一致，这就是通过binlog来实现的。</li><li>数据库的数据被干掉了，我们可以通过binlog来对数据进行恢复。</li></ul><p>因为binlog记录了数据库表的变更，所以我们可以复制（主从复制)和恢复数据。</p><h4 id="执行流程"><a href="#执行流程" class="headerlink" title="执行流程"></a>执行流程</h4><p>有了对这两个日志的概念性理解，我们再来看执行器和<code>InnoDB</code>引擎在执行上面简单的<code>update</code>语句时的内部流程。</p><ol><li>执行器先找引擎取 ID=2 这一行。ID 是主键，引擎直接用树搜索找到这一行。如果 ID=2 这一行所在的数据页本来就在内存中，就直接返回给执行器；否则，需要先从磁盘读入内存，然后再返回。</li><li>执行器拿到引擎给的行数据，把这个值加上 1，比如原来是 N，现在就是 N+1，得到新的一行数据，再调用引擎接口写入这行新数据。</li><li>引擎将这行新数据更新到内存中，同时将这个更新操作记录到 redo log 里面，此时 redo log 处于 prepare 状态。然后告知执行器执行完成了，随时可以提交事务。</li><li>执行器生成这个操作的 binlog，并把 binlog 写入磁盘。</li><li>执行器调用引擎的提交事务接口，引擎把刚刚写入的 redo log 改成提交（commit）状态，更新完成。</li></ol><p>update 语句的执行流程图：</p><center><img src="/static/mysql/zxliucheng.png" alt="流程"></center><h3 id="4-redo-log和binlog的不同"><a href="#4-redo-log和binlog的不同" class="headerlink" title="4 redo log和binlog的不同"></a>4 redo log和binlog的不同</h3><h4 id="4-1-存储上"><a href="#4-1-存储上" class="headerlink" title="4.1 存储上"></a>4.1 存储上</h4><p>redo log 是物理日志，记录的是“在某个数据页上做了什么修改”；binlog 是逻辑日志，记录的是这个语句的原始逻辑，比如“给 ID=2 这一行的 c 字段加 1 ”。</p><h4 id="4-2-功能"><a href="#4-2-功能" class="headerlink" title="4.2 功能"></a>4.2 功能</h4><p>redo log的作用是为<strong>持久化</strong>而生的。写完内存，如果数据库挂了，那我们可以通过redo log来恢复内存还没来得及刷到磁盘的数据，将redo log加载到内存里边，那内存就能恢复到挂掉之前的数据了。</p><p>binlog的作用是复制和恢复而生的。</p><p>主从服务器需要保持数据的一致性，通过binlog来同步数据。<br>如果整个数据库的数据都被删除了，binlog存储着所有的数据变更情况，那么可以通过binlog来对数据进行恢复。</p><p>那么如果整个数据库的数据都被删除了，那我可以用redo log的记录来恢复吗？</p><p>不能，因为功能的不同，redo log 存储的是物理数据的变更，如果我们内存的数据已经刷到了磁盘了，那redo log的数据就无效了。所以redo log不会存储着历史所有数据的变更，文件的内容会被覆盖的。</p><h4 id="4-3-写入细节"><a href="#4-3-写入细节" class="headerlink" title="4.3 写入细节"></a>4.3 写入细节</h4><p>redo log 是 InnoDB 引擎特有的；binlog 是 MySQL 的 Server 层实现的，所有引擎都可以使用。</p>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;p&gt;用了这么久数据库，却不知道数据库是如何执行我们输入的语句的，经过一番查阅后，记录下执行一条查询和更新SQL语句后，MySQL是如何工作的。&lt;/p&gt;
+&lt;p&gt;SQL语句基本的执行链路：&lt;/p&gt;
+&lt;center&gt;&lt;img src=&quot;/static/mysql/liucheng.p
+      
+    
+    </summary>
+    
+      <category term="数据库" scheme="https://jiawea.github.io/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+    
+    
+      <category term="MySQL" scheme="https://jiawea.github.io/tags/MySQL/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>MySQL事务和锁</title>
+    <link href="https://jiawea.github.io/2020/07/18/MySQL_block/"/>
+    <id>https://jiawea.github.io/2020/07/18/MySQL_block/</id>
+    <published>2020-07-18T02:30:18.000Z</published>
+    <updated>2020-07-22T03:07:59.573Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="1-事务"><a href="#1-事务" class="headerlink" title="1.事务"></a>1.事务</h3><h4 id="1-1-事务的概念"><a href="#1-1-事务的概念" class="headerlink" title="1.1 事务的概念"></a>1.1 事务的概念</h4><h4 id="1-2-事务的特性"><a href="#1-2-事务的特性" class="headerlink" title="1.2 事务的特性"></a>1.2 事务的特性</h4><h3 id="2-锁"><a href="#2-锁" class="headerlink" title="2.锁"></a>2.锁</h3><h4 id="2-1-乐观锁"><a href="#2-1-乐观锁" class="headerlink" title="2.1 乐观锁"></a>2.1 乐观锁</h4><h4 id="2-2-悲观锁"><a href="#2-2-悲观锁" class="headerlink" title="2.2 悲观锁"></a>2.2 悲观锁</h4><h5 id="2-2-1-共享锁（S）"><a href="#2-2-1-共享锁（S）" class="headerlink" title="2.2.1 共享锁（S）"></a>2.2.1 共享锁（S）</h5><h5 id="2-2-2-排它锁（X）"><a href="#2-2-2-排它锁（X）" class="headerlink" title="2.2.2 排它锁（X）"></a>2.2.2 排它锁（X）</h5>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h3 id=&quot;1-事务&quot;&gt;&lt;a href=&quot;#1-事务&quot; class=&quot;headerlink&quot; title=&quot;1.事务&quot;&gt;&lt;/a&gt;1.事务&lt;/h3&gt;&lt;h4 id=&quot;1-1-事务的概念&quot;&gt;&lt;a href=&quot;#1-1-事务的概念&quot; class=&quot;headerlink&quot; title=
+      
+    
+    </summary>
+    
+      <category term="数据库" scheme="https://jiawea.github.io/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/"/>
+    
+    
+      <category term="MySQL" scheme="https://jiawea.github.io/tags/MySQL/"/>
+    
+  </entry>
+  
+  <entry>
     <title>TCP/IP协议</title>
     <link href="https://jiawea.github.io/2020/06/26/TCP-IP/"/>
     <id>https://jiawea.github.io/2020/06/26/TCP-IP/</id>
     <published>2020-06-26T12:28:06.000Z</published>
-    <updated>2020-06-29T02:23:25.676Z</updated>
+    <updated>2020-06-29T02:30:21.415Z</updated>
     
     <content type="html"><![CDATA[<p>最近重新学习了网络原理这一门课，趁着这机会，也对TCP/IP做一下总结吧。</p><center><img src="/static/network/hh.png" alt="avatar"></center><h3 id="一、-计算机网络体系结构分层"><a href="#一、-计算机网络体系结构分层" class="headerlink" title="一、 计算机网络体系结构分层"></a>一、 计算机网络体系结构分层</h3><center><img src="/static/network/tx1.png" alt="avatar"></center><p>OSI模型和TCP/IP模型上有一些区别，每一层都是处理自己的事情，然后交给下一层处理。</p><h3 id="二、-TCP-IP协议"><a href="#二、-TCP-IP协议" class="headerlink" title="二、 TCP/IP协议"></a>二、 TCP/IP协议</h3><p>互联网协议套件（Internet Protocol Suite，IPS）是一个网络通讯模型，以及整个网络传输协议家族，为网际网络的基础通讯架构。它通常被称为<code>TCP/IP</code>协议族（TCP/IP Protocols），简称<code>TCP/IP</code>。</p><p><code>TCP</code>（传输控制协议）和<code>IP</code>（网际协议）是最先定义的两个核心协议，所以才统称为<code>TCP/IP</code>协议族</p><h3 id="三、-分层"><a href="#三、-分层" class="headerlink" title="三、 分层"></a>三、 分层</h3><p>TCP/IP协议族中有一个很重要一点就是分层管理，依次为以下四层，应用层，传输层，网络层，数据链路层（也有叫网络接口层/网际层）。应用层和传输层是计算机处理的，而下面两层则是通讯设备负责。</p><center><img src="/static/network/model.png" alt="avatar"></center><p>TCP/IP分层管理是有好处的，假如互联网只有一个协议统筹，某一个地方改变设计时，就需要把所有部分都替换掉，而分层只需要把变动的层替换掉即可。</p><h3 id="四、-应用层"><a href="#四、-应用层" class="headerlink" title="四、 应用层"></a>四、 应用层</h3><p>应用层是网络相关的程序为了通过网络与其他程序通信所使用的层。这个层的处理过程是应用特有的；数据从网络相关的程序以这种应用内部使用的格式进行传送，然后被编码成标准协议的格式。<br>例如我们所熟悉的：</p><ul><li>HTTP（万维网服务）</li><li>FTP（文件传输）</li><li>SMTP（电子邮件）</li><li>SSH（安全远程登陆）</li><li>DNS（名称<-> IP地址寻找,域名系统）</-></li></ul><p>应用层将数据编码成一个标准的应用层协议，然后将它传送到下一层（传输层）</p><h3 id="五、-传输层"><a href="#五、-传输层" class="headerlink" title="五、 传输层"></a>五、 传输层</h3><p>TCP/IP 中有两个具有代表性的传输层协议，分别是 TCP 和 UDP。</p><table><thead><tr><th style="text-align:center">特点</th><th style="text-align:center">TCP</th><th style="text-align:center">UDP</th></tr></thead><tbody><tr><td style="text-align:center">是否连接</td><td style="text-align:center">面向连接</td><td style="text-align:center">无连接</td></tr><tr><td style="text-align:center">是否可靠</td><td style="text-align:center">可靠传输，使用流量控制和拥塞控制</td><td style="text-align:center">不可靠传输，不使用流量控制和拥塞控制</td></tr><tr><td style="text-align:center">传输方式</td><td style="text-align:center">面向字节流</td><td style="text-align:center">面向报文</td></tr><tr><td style="text-align:center">首部开销</td><td style="text-align:center">首部最小20字节，最大60字节</td><td style="text-align:center">首部开销小，仅8字节</td></tr><tr><td style="text-align:center">场景</td><td style="text-align:center">适用于要求可靠传输的应用，例如文件传输</td><td style="text-align:center">适用于实时应用（IP电话、视频会议、直播等）</td></tr></tbody></table><h4 id="1-端口号"><a href="#1-端口号" class="headerlink" title="1.端口号"></a>1.端口号</h4><p>数据链路和 IP 中的地址，分别指的是 MAC 地址和 IP 地址。前者用来识别同一链路中不同的计算机，后者用来识别 TCP/IP  网络中互连的主机和路由器。在传输层也有这种类似于地址的概念，那就是端口号。端口号用来识别同一台计算机中进行通信的不同应用程序。因此，它也被称为程序地址。</p><p><strong>根据端口号识别应用程序</strong><br>一台计算机上同时可以运行多个程序。传输层协议正是利用这些端口号识别本机中正在进行通信的应用程序，并准确地将数据传输。</p><center><img src="/static/network/port.png" alt="avatar"></center><p><strong>根据IP 地址、端口号、协议号进行通信识别</strong><br>仅凭目标端口号识别某一个通信是远远不够的，所有还需要IP地址等，如：</p><center><img src="/static/network/ip-port1.png" alt="avatar"></center><br><center><img src="/static/network/ip-port2.png" alt="avatar"></center><h4 id="2-端口号的确认"><a href="#2-端口号的确认" class="headerlink" title="2.端口号的确认"></a>2.端口号的确认</h4><p>传输层端口号为16位整数。</p><ul><li>熟知端口号： <code>0~1023</code></li><li>登记端口号： <code>1024~49151</code></li><li>客户端口号/短暂端口号： <code>49152~65535</code></li></ul><h4 id="3-UDP"><a href="#3-UDP" class="headerlink" title="3.UDP"></a>3.UDP</h4><p>UDP是无连接服务，在数据传输之前无需与对端进行任何信息交换（握手），直接构造传输层报文段并向接收端发送。类似于邮政系统的信件通信，邮寄信件之前无需跟收件人交换任何信息，写好信件后直接交给投递员就好了。</p><h4 id="4-TCP"><a href="#4-TCP" class="headerlink" title="4.TCP"></a>4.TCP</h4><p>TCP是面向连接服务，在数据传输之前需要双方交换一些控制信息，建立逻辑连接，然后再传输数据，数据传输结束后还需要再拆除连接。类似于电话通讯，必须首先拨号，建立电话连接，对方接起电话后，才可以进行语音交互通信，通信结束后还需要挂断电话拆除连接。</p><h4 id="5-复用与分解"><a href="#5-复用与分解" class="headerlink" title="5.复用与分解"></a>5.复用与分解</h4><p>众多应用程序公用一个传输层协议，并能够实现将接收到的数据准确交互给不同的应用进程，要实现这一基本功能，称为<span style="border-bottom:2px dashed red;">传输层的多路复用和多路分解。</span></p><p>一个网络应用程序通过一个或多个套接字，实现与传输层之间的数据传递。因此，在接收主机中的传输层实际上并没有直接将数据交付给进程，而是先将数据交付给了与接收进程相关联的一个中间套接字，每个套接字都必须有唯一的标识符。这样传输层协议才能将数据交付给正确的套接字。</p><p>下面是UDP和TCP套接字的区别：</p><center><img src="/static/network/udp.png" alt="avatar"></center><br><center><img src="/static/network/tcp.png" alt="avatar"></center><h4 id="6-TCP报文结构"><a href="#6-TCP报文结构" class="headerlink" title="6.TCP报文结构"></a>6.TCP报文结构</h4><p><code>TCP</code>报文段由首部字段和一个数据字段组成，而报文是有限制大小的，当TCP发送一个大文件时，通常会把该文件划分为长度为<code>MSS</code>(最大报文长度，Maximum Segment Size)的若干块，每个数据封装了一个<code>TCP报文</code>分别发送，报文结构如下：</p><center><img src="/static/network/baowen.png" alt="avatar"></center><p><strong>序列号<code>SEQ</code>和确认号<code>ACK</code></strong><br><span style="border-bottom:2px dashed red;">TCP网络中，为了保障每个连接提供有保证和有序的字节传递，使用了<code>Sequence Number</code> (,序列号)和 <code>Acknowledgment Number</code>(确认号)，即<code>seq</code>和<code>ack</code>。</span></p><ul><li><code>seq</code>表示每次传输中字节的偏移量。</li><li><code>ack</code>表示期望下一次接收的<code>seq</code>是多少。</li></ul><p><strong>同步序列号<code>SYN</code></strong><br>当<code>SYN=1</code>时，表示该<code>TCP</code>报文段是一个建立新连接请求控制段或者是同意建立新连接的确认段（此时<code>ACK=1</code>）。</p><p><strong><code>FIN</code></strong><br><code>FIN</code>用来释放一个<code>TCP</code>连接，当<code>FIN=1</code>时，表明改<code>TCP</code>报文段的发送端数据已发送完毕，并请求释放连接。</p><h4 id="7-TCP三次握手"><a href="#7-TCP三次握手" class="headerlink" title="7.TCP三次握手"></a>7.TCP三次握手</h4><center><img src="/static/network/3.png" alt="avatar"></center><h4 id="8-TCP四次挥手"><a href="#8-TCP四次挥手" class="headerlink" title="8.TCP四次挥手"></a>8.TCP四次挥手</h4><center><img src="/static/network/4.png" alt="avatar"></center>]]></content>
     
