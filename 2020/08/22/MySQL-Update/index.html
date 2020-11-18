@@ -219,9 +219,10 @@
 <p><strong>问题1</strong><br>如果在内存把数据修改了，但是还没来得及刷回磁盘数据库却突然岩机了怎么办？很显然数据就丢失了，这和我们预期的不一样。</p>
 <p><strong>如何解决</strong><br>也许你会说很简单阿，在事务提交之前写入磁盘就行了。</p>
 <p><strong>问题2</strong><br>如果每一次更新操作都需要刷回磁盘，这整个过程<code>IO</code>成本、查找记录成本都很高。一个页有<code>16kb</code>大小，只改一点内容就操作一次磁盘，为了解决这个问题。MySQL引入了<code>WAL</code>这么一个概念（Write-Ahead Logging），先写入日志，再写磁盘，至于什么时候再写入磁盘，会有配置供我们设置。</p>
-<p>此时就引入<code>redo log</code>，当数据修改的时候，不仅在内存中操作，还会在<code>redo log</code>中记录这次操作。当事务提交的时会将redo log日志进行刷入磁盘。当数据库岩机重启的时候，之前提交的记录都不会丢失，会恢复<code>redo log</code>中的内容到数据库，再根据<code>undo log</code>和<code>binlog</code>决定回滚还是提交数据。这个能力称为<code>crash-safe</code>。</p>
+<p>此时就引入<code>redo log</code>，当数据修改的时候，不仅在内存中操作，还会在<code>redo log</code>中记录这次操作，此时<code>redo log</code>的状态为<code>prepare</code>。当事务提交的时<code>redo log</code>日志将从<code>prepare</code>状态修改为<code>commit</code>，也就是我们所说的<strong>两阶段提交</strong>，然后再根据需要将更新完的数据刷入磁盘。当数据库岩机重启的时候，之前提交的记录都不会丢失，会恢复<code>redo log</code>中的内容到数据库，再根据<code>undo log</code>和<code>binlog</code>决定回滚还是提交数据。这个能力称为<code>crash-safe</code>。</p>
 <p><code>redo log</code>记录的是物理变化，即内容修改（在某个数据页上做了什么修改）。它也是需要磁盘的，但它的好处是<code>顺序IO</code>，比<code>随机IO</code>快多了。</p>
-<h3 id="3-重要的日志模块：binlog"><a href="#3-重要的日志模块：binlog" class="headerlink" title="3 重要的日志模块：binlog"></a>3 重要的日志模块：binlog</h3><p>MySQL 整体来看，其实就有两块：一块是 Server 层，它主要做的是 MySQL 功能层面的事情；还有一块是引擎层，负责存储相关的具体事宜。<code>redo log</code>是<code>InnoDB</code>引擎特有的日志，而 Server 层也有自己的日志，称为 <code>binlog</code>（归档日志）。</p>
+<h3 id="3-重要的日志模块：undo-log"><a href="#3-重要的日志模块：undo-log" class="headerlink" title="3 重要的日志模块：undo log"></a>3 重要的日志模块：undo log</h3><p><code>undo log</code>是用来保证事务的原子性，它记录数据被修改前的值，以便在事务失败的时候进行<code>rollback</code>。举个栗子，当事务提交成功后，在将<code>redo log</code>从<code>perpare</code>状态修改成<code>commit</code>时系统异常重启了，那么<code>redo log</code>会根据自身的状态并结合<code>undo log</code>进行回滚。</p>
+<h3 id="4-重要的日志模块：binlog"><a href="#4-重要的日志模块：binlog" class="headerlink" title="4 重要的日志模块：binlog"></a>4 重要的日志模块：binlog</h3><p>MySQL 整体来看，其实就有两块：一块是 Server 层，它主要做的是 MySQL 功能层面的事情；还有一块是引擎层，负责存储相关的具体事宜。<code>redo log</code>是<code>InnoDB</code>引擎特有的日志，而 Server 层也有自己的日志，称为 <code>binlog</code>（归档日志）。</p>
 <p><code>binlog</code>记录了数据库表结构和表数据变更，比如<code>update/delete/insert/truncate/create</code>。它不会记录<code>select</code>（因为这没有对表没有进行变更）。</p>
 <p>我们可以简单理解为：存储着每条变更的SQL语句。</p>
 <h4 id="复制和恢复数据"><a href="#复制和恢复数据" class="headerlink" title="复制和恢复数据"></a>复制和恢复数据</h4><p>主要有两个作用：</p>
