@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="HTTP,WebSocket,TCP,">
+  <meta name="keywords" content="Golang,Supervisor,">
 
 
 
@@ -81,22 +81,18 @@
 
 
 
-<meta name="description" content="最近需要实现一个可以和客户端进行实时通讯的后端服务，由于后端可以主动发送消息给客户端，如果使用HTTP的话服务端是不能主动向客户端发送信息的，之前对Socket只是一个大概的了解。所以查了一些相关的资料，记录一下HTTP和WebSocket的区别。">
-<meta name="keywords" content="HTTP,WebSocket,TCP">
+<meta name="description" content="1.介绍Supervisor是用Python开发的一套通用的进程管理程序，能将一个普通的命令行进程变为后台daemon，并监控进程状态，异常退出时能自动重启。 2.安装由于使用Python开发的，所以我们可以用pip来安装。1sudo pip install supervisor 如果是 Ubuntu 系统，还可以使用 apt-get 安装。1apt-get install supervisor">
+<meta name="keywords" content="Golang,Supervisor">
 <meta property="og:type" content="article">
-<meta property="og:title" content="HTTP和WebSocket协议的区别">
-<meta property="og:url" content="https://jiawea.github.io/2020/04/11/Http_WebSocket/index.html">
+<meta property="og:title" content="使用Supervisor管理Golang程序">
+<meta property="og:url" content="https://jiawea.github.io/2020/06/20/Supervisor/index.html">
 <meta property="og:site_name" content="Ray&#39;s blog">
-<meta property="og:description" content="最近需要实现一个可以和客户端进行实时通讯的后端服务，由于后端可以主动发送消息给客户端，如果使用HTTP的话服务端是不能主动向客户端发送信息的，之前对Socket只是一个大概的了解。所以查了一些相关的资料，记录一下HTTP和WebSocket的区别。">
+<meta property="og:description" content="1.介绍Supervisor是用Python开发的一套通用的进程管理程序，能将一个普通的命令行进程变为后台daemon，并监控进程状态，异常退出时能自动重启。 2.安装由于使用Python开发的，所以我们可以用pip来安装。1sudo pip install supervisor 如果是 Ubuntu 系统，还可以使用 apt-get 安装。1apt-get install supervisor">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://jiawea.github.io/static/blogImg/HTTP_connect.png">
-<meta property="og:image" content="https://jiawea.github.io/static/blogImg/WebSocket.png">
-<meta property="og:image" content="https://jiawea.github.io/static/blogImg/tcp_http_ws.png">
-<meta property="og:updated_time" content="2020-06-10T01:12:24.656Z">
+<meta property="og:updated_time" content="2020-11-19T07:20:58.160Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="HTTP和WebSocket协议的区别">
-<meta name="twitter:description" content="最近需要实现一个可以和客户端进行实时通讯的后端服务，由于后端可以主动发送消息给客户端，如果使用HTTP的话服务端是不能主动向客户端发送信息的，之前对Socket只是一个大概的了解。所以查了一些相关的资料，记录一下HTTP和WebSocket的区别。">
-<meta name="twitter:image" content="https://jiawea.github.io/static/blogImg/HTTP_connect.png">
+<meta name="twitter:title" content="使用Supervisor管理Golang程序">
+<meta name="twitter:description" content="1.介绍Supervisor是用Python开发的一套通用的进程管理程序，能将一个普通的命令行进程变为后台daemon，并监控进程状态，异常退出时能自动重启。 2.安装由于使用Python开发的，所以我们可以用pip来安装。1sudo pip install supervisor 如果是 Ubuntu 系统，还可以使用 apt-get 安装。1apt-get install supervisor">
 
 
 
@@ -126,13 +122,13 @@
 
 
 
-  <link rel="canonical" href="https://jiawea.github.io/2020/04/11/Http_WebSocket/">
+  <link rel="canonical" href="https://jiawea.github.io/2020/06/20/Supervisor/">
 
 
 
 
 
-  <title>HTTP和WebSocket协议的区别 | Ray's blog</title>
+  <title>使用Supervisor管理Golang程序 | Ray's blog</title>
   
 
 
@@ -259,7 +255,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://jiawea.github.io/2020/04/11/Http_WebSocket/">
+    <link itemprop="mainEntityOfPage" href="https://jiawea.github.io/2020/06/20/Supervisor/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Ray Wong">
@@ -276,7 +272,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">HTTP和WebSocket协议的区别</h1>
+          <h1 class="post-title" itemprop="name headline">使用Supervisor管理Golang程序</h1>
         
 
         <div class="post-meta">
@@ -288,8 +284,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-04-11T15:30:00+08:00">
-                2020-04-11
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-20T10:47:23+08:00">
+                2020-06-20
               </time>
             
 
@@ -311,8 +307,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/网络/" itemprop="url" rel="index">
-                    <span itemprop="name">网络</span>
+                  <a href="/categories/后端/" itemprop="url" rel="index">
+                    <span itemprop="name">后端</span>
                   </a>
                 </span>
 
@@ -348,47 +344,18 @@
       
 
       
-        <p>最近需要实现一个可以和客户端进行实时通讯的后端服务，由于后端可以主动发送消息给客户端，如果使用<code>HTTP</code>的话服务端是不能主动向客户端发送信息的，之前对<code>Socket</code>只是一个大概的了解。所以查了一些相关的资料，记录一下<code>HTTP</code>和<code>WebSocket</code>的区别。</p>
-<a id="more"></a>
-<h3 id="HTTP"><a href="#HTTP" class="headerlink" title="HTTP"></a>HTTP</h3><p>HTTP是一个Request/Response请求和响应的模式，两种类型都是由请求行、请求头、空行、请求主体四部分组成。这里将不详细介绍，可看我之前的文章。<br>只有客户端向服务端发送一个请求后，服务端才能向客户端回复，客户端在没有请求服务端时，服务端是不能主动向客户端发送数据的。</p>
-<h4 id="短连接"><a href="#短连接" class="headerlink" title="短连接"></a>短连接</h4><p>举个栗子：<br>比如说客户端想实时地知道某个状态是否<strong>发生</strong>变化时，于是请求了服务端，但是服务端此时又<strong>没有发生</strong>变化。遇到这种情况下客户端只能不断地想服务端发送请求，直到返回满意的结果。这也就是我们所说的<strong>轮询</strong>。这是一个很浪费资源的，因为每个资源都需要建立一个新的连接，而HTTP底层使用的是<code>TCP</code>，每次都需要三次握手建立连接，所以会造成资源浪费。</p>
-<p>于是由引出了一个新的概念，<code>HTTP</code>长连接，这里的长连接和<code>socket</code>的长连接是有区别的，这个稍后再说。</p>
-<h4 id="长连接"><a href="#长连接" class="headerlink" title="长连接"></a>长连接</h4><p>所谓的长连接就是客户端向服务端发送请求，服务端不需要马上回复客户端，只有等到服务端有结果了才向客户端回复。相比上面的短连接可以减少连接次数和压力。</p>
-<center><img src="/static/blogImg/HTTP_connect.png" alt="avatar">WebSocket.png</center>
-
-<p>在一个TCP连接上也可以传输多个Request/Response消息对，但是HTTP的基本模型还是一个Request对应一个Response。</p>
-<h3 id="WebSocket"><a href="#WebSocket" class="headerlink" title="WebSocket"></a>WebSocket</h3><p>WebSocket 协议在2008年诞生，2011年成为国际标准。所有浏览器都已经支持了。</p>
-<p>它的最大特点就是，服务器可以主动向客户端推送信息，客户端也可以主动向服务器发送信息，是真正的双向平等对话，属于服务器推送技术的一种。</p>
-<center><img src="/static/blogImg/WebSocket.png" alt="avatar"></center>
-
-<p>其他特点包括：</p>
-<ol>
-<li>建立在 TCP 协议之上，服务器端的实现比较容易。</li>
-<li>与 HTTP 协议有着良好的兼容性。默认端口也是80和443，并且握手阶段采用 HTTP 协议，因此不容易屏蔽，能通过各种 HTTP 代理服务器。</li>
-<li>数据格式比较轻量，性能开销小，通信高效。</li>
-<li>可以发送文本，也可以发送二进制数据。</li>
-<li>没有同源限制，客户端可以与任意服务器通信。</li>
-<li>协议标识符是ws（如果加密，则为wss），服务器网址就是 URL。</li>
-</ol>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ws://example.com:80/some/path</span><br></pre></td></tr></table></figure>
-<center><img src="/static/blogImg/tcp_http_ws.png" alt="avatar"></center>
-
-<h4 id="WebSocket协议的规范"><a href="#WebSocket协议的规范" class="headerlink" title="WebSocket协议的规范"></a>WebSocket协议的规范</h4><p>以下是一个典型的WebSocket发起请求到响应请求的示例：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">客户端到服务端：</span><br><span class="line">GET / HTTP/1.1</span><br><span class="line">Connection:Upgrade</span><br><span class="line">Host:127.0.0.1:8088</span><br><span class="line">Origin:null</span><br><span class="line">Sec-WebSocket-Extensions:x-webkit-deflate-frame</span><br><span class="line">Sec-WebSocket-Key:puVOuWb7rel6z2AVZBKnfw==</span><br><span class="line">Sec-WebSocket-Version:13</span><br><span class="line">Upgrade:websocket</span><br><span class="line"></span><br><span class="line">服务端到客户端：</span><br><span class="line">HTTP/1.1 101 Switching Protocols</span><br><span class="line">Connection:Upgrade</span><br><span class="line">Server:beetle websocket server</span><br><span class="line">Upgrade:WebSocket</span><br><span class="line">date: Thu, 10 May 2018 07:32:25 GMT</span><br><span class="line">Access-Control-Allow-Credentials:true</span><br><span class="line">Access-Control-Allow-Headers:content-type</span><br><span class="line">Sec-WebSocket-Accept:FCKgUr8c7OsDsLFeJTWrJw6WO8Q=</span><br></pre></td></tr></table></figure></p>
-<p>我们可以看到，WebSocket协议和HTTP协议乍看并没有太大的区别，但细看下来，区别还是有些的，这其实是一个握手的http请求，首先请求和响应的，”Upgrade:WebSocket”表示请求的目的就是要将客户端和服务器端的通讯协议从 HTTP 协议升级到 WebSocket协议。从客户端到服务器端请求的信息里包含有”Sec-WebSocket-Extensions”、“Sec-WebSocket-Key”这样的头信息。这是客户端浏览器需要向服务器端提供的握手信息，服务器端解析这些头信息，并在握手的过程中依据这些信息生成一个28位的安全密钥并返回给客户端，以表明服务器端获取了客户端的请求，同意创建 WebSocket 连接。</p>
-<p>当握手成功后，这个时候TCP连接就已经建立了，客户端与服务端就能够直接通过WebSocket直接进行数据传递。不过服务端还需要判断一次数据请求是什么时候开始的和什么时候是请求的结束的。在WebSocket中，由于浏览端和服务端已经打好招呼，如我发送的内容为utf-8编码，如果我发送0x00,表示包的开始，如果发送了0xFF，就表示包的结束了。这就解决了黏包的问题。</p>
-<h4 id="与HTTP的相同点"><a href="#与HTTP的相同点" class="headerlink" title="与HTTP的相同点"></a>与HTTP的相同点</h4><ol>
-<li>都是基于TCP的应用层协议。</li>
-<li>都使用Request/Response模型进行连接的建立。</li>
-<li>在连接的建立过程中对错误的处理方式相同，在这个阶段WS可能返回和HTTP相同的返回码。</li>
-<li>都可以在网络中传输数据。</li>
-</ol>
-<h4 id="与HTTP的不同点"><a href="#与HTTP的不同点" class="headerlink" title="与HTTP的不同点"></a>与HTTP的不同点</h4><ol>
-<li>WS使用HTTP来建立连接，但是定义了一系列新的header域，这些域在HTTP中并不会使用。</li>
-<li>WS的连接不能通过中间人来转发，它必须是一个直接连接。</li>
-<li>WS连接建立之后，通信双方都可以在任何时刻向另一方发送数据。</li>
-<li>WS连接建立之后，数据的传输使用帧来传递，不再需要Request消息。</li>
-<li>WS的数据帧有序。</li>
-</ol>
+        <h3 id="1-介绍"><a href="#1-介绍" class="headerlink" title="1.介绍"></a>1.介绍</h3><p>Supervisor是用Python开发的一套通用的进程管理程序，能将一个普通的命令行进程变为后台<code>daemon</code>，并监控进程状态，异常退出时能自动重启。</p>
+<h3 id="2-安装"><a href="#2-安装" class="headerlink" title="2.安装"></a>2.安装</h3><p>由于使用Python开发的，所以我们可以用<code>pip</code>来安装。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo pip install supervisor</span><br></pre></td></tr></table></figure></p>
+<p>如果是 Ubuntu 系统，还可以使用 apt-get 安装。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install supervisor</span><br></pre></td></tr></table></figure></p>
+<h3 id="3-配置"><a href="#3-配置" class="headerlink" title="3.配置"></a>3.配置</h3><p>安装完 supervisor 之后，可以运行echo_supervisord_conf 命令输出默认的配置项，也可以重定向到一个配置文件里:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo_supervisord_conf &gt; /etc/supervisord.conf</span><br></pre></td></tr></table></figure></p>
+<p>打开配置文件，主要修改最后两行内容，设置配置文件目录并将注释去掉。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/supervisord.conf</span><br></pre></td></tr></table></figure></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[unix_http_server]</span><br><span class="line">···</span><br><span class="line">···</span><br><span class="line"></span><br><span class="line">; 包含其他的配置文件</span><br><span class="line">[include]</span><br><span class="line">files = /etc/supervisor/*.ini</span><br></pre></td></tr></table></figure>
+<p>创建放置配置文件的目录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /etc/supervisor</span><br></pre></td></tr></table></figure></p>
+<p>在目录<code>/etc/supervisor</code>下新建配置文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/supervisor/demo.ini</span><br></pre></td></tr></table></figure></p>
+<p>并添加内容：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[program:demo]</span><br><span class="line">directory = /home/demo</span><br><span class="line">command = ./demo.app</span><br><span class="line">autostart = true</span><br><span class="line">startsecs = 5                                                  ; 5 秒后没有异常退出，就当作已经正常启动了</span><br><span class="line">autorestart = true                                             ; 程序异常退出后自动重启</span><br><span class="line">startretries = 3                                               ; 启动失败自动重试次数，默认是 3</span><br><span class="line">user = root                                                    ; 启动用户</span><br><span class="line">redirect_stderr = true                                         ; 把 stderr 重定向到 stdout，默认 false</span><br><span class="line">stdout_logfile_maxbytes = 50MB                                 ; stdout 日志文件大小，默认 50MB</span><br><span class="line">stdout_logfile_backups = 20                                    ; stdout 日志文件备份数</span><br><span class="line">stdout_logfile = /home/demo/log/supervisor/run.log         	   ; 需要事先创建好目录，否则会启动失败</span><br><span class="line">stderr_logfile = /home/demo/log/supervisor/run.err.log     	   ; 需要事先创建好目录，否则会启动失败</span><br></pre></td></tr></table></figure></p>
+<p>运行<code>supervisor</code>，到这里就部署完成了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">supervisord -c /etc/supervisord.conf</span><br></pre></td></tr></table></figure></p>
+<p>查看<code>demo</code>是否运行成功。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">supervisorctl status demo</span><br></pre></td></tr></table></figure></p>
+<h3 id="4-常用命令"><a href="#4-常用命令" class="headerlink" title="4.常用命令"></a>4.常用命令</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">supervisorctl status        	# 查看所有进程的状态</span><br><span class="line">supervisorctl stop all       	# 停止所有</span><br><span class="line">supervisorctl start all      	#　启动所有</span><br><span class="line">supervisorctl restart       	# 重启</span><br><span class="line">supervisorctl update        	# 配置文件修改后使用该命令加载新的配置</span><br><span class="line">supervisorctl reload        	# 重新启动配置中的所有程序</span><br></pre></td></tr></table></figure>
 
       
     </div>
@@ -406,11 +373,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/HTTP/" rel="tag"># HTTP</a>
+            <a href="/tags/Golang/" rel="tag"># Golang</a>
           
-            <a href="/tags/WebSocket/" rel="tag"># WebSocket</a>
-          
-            <a href="/tags/TCP/" rel="tag"># TCP</a>
+            <a href="/tags/Supervisor/" rel="tag"># Supervisor</a>
           
         </div>
       
@@ -423,8 +388,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2020/03/27/WHAT-IS-RPC/" rel="next" title="RPC是什么">
-                <i class="fa fa-chevron-left"></i> RPC是什么
+              <a href="/2020/05/27/Go_variable/" rel="next" title="Golang的值类型和引用类型">
+                <i class="fa fa-chevron-left"></i> Golang的值类型和引用类型
               </a>
             
           </div>
@@ -433,8 +398,8 @@
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2020/05/08/MySQL/" rel="prev" title="MySQL优化之SQL优化">
-                MySQL优化之SQL优化 <i class="fa fa-chevron-right"></i>
+              <a href="/2020/06/26/TCP-IP/" rel="prev" title="TCP/IP协议">
+                TCP/IP协议 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -598,7 +563,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#HTTP"><span class="nav-number">1.</span> <span class="nav-text">HTTP</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#短连接"><span class="nav-number">1.1.</span> <span class="nav-text">短连接</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#长连接"><span class="nav-number">1.2.</span> <span class="nav-text">长连接</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#WebSocket"><span class="nav-number">2.</span> <span class="nav-text">WebSocket</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#WebSocket协议的规范"><span class="nav-number">2.1.</span> <span class="nav-text">WebSocket协议的规范</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#与HTTP的相同点"><span class="nav-number">2.2.</span> <span class="nav-text">与HTTP的相同点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#与HTTP的不同点"><span class="nav-number">2.3.</span> <span class="nav-text">与HTTP的不同点</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-介绍"><span class="nav-number">1.</span> <span class="nav-text">1.介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-安装"><span class="nav-number">2.</span> <span class="nav-text">2.安装</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-配置"><span class="nav-number">3.</span> <span class="nav-text">3.配置</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-常用命令"><span class="nav-number">4.</span> <span class="nav-text">4.常用命令</span></a></li></ol></div>
             
 
           </div>
