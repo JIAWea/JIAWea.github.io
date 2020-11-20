@@ -5,7 +5,7 @@
   
 
 
-<html class="theme-next mist use-motion" lang="zh-Hans">
+<html class="theme-next pisces use-motion" lang="zh-Hans">
 <head><meta name="generator" content="Hexo 3.9.0">
   <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -99,7 +99,7 @@
   var NexT = window.NexT || {};
   var CONFIG = {
     root: '/',
-    scheme: 'Mist',
+    scheme: 'Pisces',
     version: '5.1.4',
     sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
     fancybox: true,
@@ -496,9 +496,6 @@
       
         
           <h3 id="1-事务"><a href="#1-事务" class="headerlink" title="1.事务"></a>1.事务</h3><h4 id="1-1-事务的概念"><a href="#1-1-事务的概念" class="headerlink" title="1.1 事务的概念"></a>1.1 事务的概念</h4><p>事务是一组连续的操作集合，MySQL中默认<code>AUTOCOMMIT</code>是为<code>1</code>，也就是说每一次请求都是一个独立的事务，即改请求会被立即执行。以<code>START TRANSACTION</code>;或<code>BEGIN</code>开始一个事务,以<code>COMMIT</code>或者<code>ROLLBACK</code>结束一次事务。</p>
-<h4 id="1-2-事务的特性ACID"><a href="#1-2-事务的特性ACID" class="headerlink" title="1.2 事务的特性ACID"></a>1.2 事务的特性ACID</h4><p><strong>A 原子性</strong></p>
-<p>一个事务必须保证其中的操作要么全部执行，要么全部回滚，不可能存在只执行了一部分这种情况出现。</p>
-<p><strong>C 一致性</strong><br>数据必须保证从一种一致性的状态转换为另一种一致性状态。<br>比如上一个事务中执行了第二步时系统崩溃了，数据也不会出现bill的账户少了100块，但是tim的账户没变的情况。要么维持原装（全部回滚），要么bill少了100块同时tim多了100块，只有这两种一致性状态的。</p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2020/07/18/MySQL_block/#more" rel="contents">
@@ -644,9 +641,7 @@
 
       
         
-          <p>最近重新学习了网络原理这一门课，趁着这机会，也对TCP/IP做一下总结吧。</p>
-<center><img src="/static/network/hh.png" alt="avatar"></center>
-
+          <p>最近重新学习了计算机网络原理这一门课，趁着这机会，也对TCP/IP做一下总结吧。</p>
 <h3 id="一、-计算机网络体系结构分层"><a href="#一、-计算机网络体系结构分层" class="headerlink" title="一、 计算机网络体系结构分层"></a>一、 计算机网络体系结构分层</h3><center><img src="/static/network/tx1.png" alt="avatar"></center>
 
 <p>OSI模型和TCP/IP模型上有一些区别，每一层都是处理自己的事情，然后交给下一层处理。</p>
@@ -795,21 +790,15 @@
 
       
         
-          
-            <h3 id="1-介绍"><a href="#1-介绍" class="headerlink" title="1.介绍"></a>1.介绍</h3><p>Supervisor是用Python开发的一套通用的进程管理程序，能将一个普通的命令行进程变为后台<code>daemon</code>，并监控进程状态，异常退出时能自动重启。</p>
+          <h3 id="1-介绍"><a href="#1-介绍" class="headerlink" title="1.介绍"></a>1.介绍</h3><p>Supervisor是用Python开发的一套通用的进程管理程序，能将一个普通的命令行进程变为后台<code>daemon</code>，并监控进程状态，异常退出时能自动重启。</p>
 <h3 id="2-安装"><a href="#2-安装" class="headerlink" title="2.安装"></a>2.安装</h3><p>由于使用Python开发的，所以我们可以用<code>pip</code>来安装。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo pip install supervisor</span><br></pre></td></tr></table></figure></p>
-<p>如果是 Ubuntu 系统，还可以使用 apt-get 安装。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apt-get install supervisor</span><br></pre></td></tr></table></figure></p>
-<h3 id="3-配置"><a href="#3-配置" class="headerlink" title="3.配置"></a>3.配置</h3><p>安装完 supervisor 之后，可以运行echo_supervisord_conf 命令输出默认的配置项，也可以重定向到一个配置文件里:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo_supervisord_conf &gt; /etc/supervisord.conf</span><br></pre></td></tr></table></figure></p>
-<p>打开配置文件，主要修改最后两行内容，设置配置文件目录并将注释去掉。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/supervisord.conf</span><br></pre></td></tr></table></figure></p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[unix_http_server]</span><br><span class="line">···</span><br><span class="line">···</span><br><span class="line"></span><br><span class="line">; 包含其他的配置文件</span><br><span class="line">[include]</span><br><span class="line">files = /etc/supervisor/*.ini</span><br></pre></td></tr></table></figure>
-<p>创建放置配置文件的目录<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir -p /etc/supervisor</span><br></pre></td></tr></table></figure></p>
-<p>在目录<code>/etc/supervisor</code>下新建配置文件<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/supervisor/demo.ini</span><br></pre></td></tr></table></figure></p>
-<p>并添加内容：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[program:demo]</span><br><span class="line">directory = /home/demo</span><br><span class="line">command = ./demo.app</span><br><span class="line">autostart = true</span><br><span class="line">startsecs = 5                                                  ; 5 秒后没有异常退出，就当作已经正常启动了</span><br><span class="line">autorestart = true                                             ; 程序异常退出后自动重启</span><br><span class="line">startretries = 3                                               ; 启动失败自动重试次数，默认是 3</span><br><span class="line">user = root                                                    ; 启动用户</span><br><span class="line">redirect_stderr = true                                         ; 把 stderr 重定向到 stdout，默认 false</span><br><span class="line">stdout_logfile_maxbytes = 50MB                                 ; stdout 日志文件大小，默认 50MB</span><br><span class="line">stdout_logfile_backups = 20                                    ; stdout 日志文件备份数</span><br><span class="line">stdout_logfile = /home/demo/log/supervisor/run.log         	   ; 需要事先创建好目录，否则会启动失败</span><br><span class="line">stderr_logfile = /home/demo/log/supervisor/run.err.log     	   ; 需要事先创建好目录，否则会启动失败</span><br></pre></td></tr></table></figure></p>
-<p>运行<code>supervisor</code>，到这里就部署完成了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">supervisord -c /etc/supervisord.conf</span><br></pre></td></tr></table></figure></p>
-<p>查看<code>demo</code>是否运行成功。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">supervisorctl status demo</span><br></pre></td></tr></table></figure></p>
-<h3 id="4-常用命令"><a href="#4-常用命令" class="headerlink" title="4.常用命令"></a>4.常用命令</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">supervisorctl status        	# 查看所有进程的状态</span><br><span class="line">supervisorctl stop all       	# 停止所有</span><br><span class="line">supervisorctl start all      	#　启动所有</span><br><span class="line">supervisorctl restart       	# 重启</span><br><span class="line">supervisorctl update        	# 配置文件修改后使用该命令加载新的配置</span><br><span class="line">supervisorctl reload        	# 重新启动配置中的所有程序</span><br></pre></td></tr></table></figure>
-
-          
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2020/06/20/Supervisor/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -948,18 +937,18 @@
 
       
         
-          
-            <h3 id="值类型和引用类型"><a href="#值类型和引用类型" class="headerlink" title="值类型和引用类型"></a>值类型和引用类型</h3><ul>
+          <h3 id="值类型和引用类型"><a href="#值类型和引用类型" class="headerlink" title="值类型和引用类型"></a>值类型和引用类型</h3><ul>
 <li>值类型：变量直接存储，内存通常在栈中分配。</li>
 <li>引用类型：变量存储的是一个地址，这个地址存储最终的值。内存通常在堆上分配。通过GC回收</li>
 </ul>
 <p>PS : 通常在函数中转入指针效率比较高，因为方法中的参数是需要进行拷贝的，拷贝指针的效率比较高，要是一个大的接口体的话拷贝的效率就比较低</p>
-<h3 id="GoLang中的值类型和引用类型"><a href="#GoLang中的值类型和引用类型" class="headerlink" title="GoLang中的值类型和引用类型"></a>GoLang中的值类型和引用类型</h3><ol>
-<li>值类型 ： 基本数据类型int、float、bool、string以及数组和struct。</li>
-<li>引用类型：指针、slice、map、chan等都是引用类型</li>
-</ol>
-
-          
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2020/05/27/Go_variable/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
         
       
     </div>
@@ -1100,13 +1089,6 @@
         
           <p>NoSQL非关系型数据库。<br>Redis支持5种数据类型：string(字符串), hash(哈希), list(双向列表), set(无序集合), zset(有序集合)</p>
 <h3 id="1、string"><a href="#1、string" class="headerlink" title="1、string"></a>1、string</h3><p><strong>介绍</strong><br>string数据类型是最常用的、简单的key-value类型，普通的key/value存储都可以归为此类。value也可以是数字。因为是二进制安全的，所有可以将一个图片文件的内容作为string来存储。redis的string完全实现目前<code>memcached</code>的功能，并且效率更高。除了提供与memcached一样的<code>get</code>,<code>set</code>,<code>incr</code>,<code>decr</code>等操作外，还提供了下面的操作：</p>
-<ol>
-<li>获取字符串长度</li>
-<li>往字符串append内容</li>
-<li>设置和获取字符串的某一段内容</li>
-<li>设置和获取字符串的某一位(bit)</li>
-<li>批量设置一系列字符串的内容</li>
-</ol>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2020/05/24/Redis/#more" rel="contents">
@@ -1850,15 +1832,21 @@
                   </span>
                 
                   <span class="links-of-author-item">
-                    <a href="mailto:rayhwong@126.com" target="_blank" title="E-Mail">
+                    <a href="https://www.cnblogs.com/ray-h/" target="_blank" title="cnblog">
                       
-                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                        <i class="fa fa-fw fa-globe"></i>cnblog</a>
                   </span>
                 
                   <span class="links-of-author-item">
-                    <a href="https://www.cnblogs.com/ray-h/" target="_blank" title="博客园">
+                    <a href="http://wpa.qq.com/msgrd?v=3&uin=1552937000&site=qq&menu=yes" target="_blank" title="QQ">
                       
-                        <i class="fa fa-fw fa-globe"></i>博客园</a>
+                        <i class="fa fa-fw fa-globe"></i>QQ</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:rayhwong@126.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
                   </span>
                 
             </div>
@@ -1907,7 +1895,7 @@
 
 
 
-  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Mist</a> v5.1.4</div>
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
 
 
 
@@ -2006,6 +1994,13 @@
 
   
   
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
 
   
 

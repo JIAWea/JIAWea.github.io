@@ -2,9 +2,44 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://jiawea.github.io/about/index.html</loc>
+    
+    <lastmod>2020-11-20T01:59:09.736Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jiawea.github.io/2020/07/18/MySQL_block/</loc>
+    
+    <lastmod>2020-11-20T01:49:58.215Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jiawea.github.io/2020/06/26/TCP-IP/</loc>
+    
+    <lastmod>2020-11-20T01:49:21.290Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jiawea.github.io/2020/05/24/Redis/</loc>
+    
+    <lastmod>2020-11-20T01:47:47.398Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jiawea.github.io/2020/05/27/Go_variable/</loc>
+    
+    <lastmod>2020-11-20T01:47:28.918Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://jiawea.github.io/2020/06/20/Supervisor/</loc>
     
-    <lastmod>2020-11-19T07:20:58.160Z</lastmod>
+    <lastmod>2020-11-20T01:46:42.717Z</lastmod>
     
   </url>
   
@@ -23,13 +58,6 @@
   </url>
   
   <url>
-    <loc>https://jiawea.github.io/2020/07/18/MySQL_block/</loc>
-    
-    <lastmod>2020-11-19T02:49:08.403Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://jiawea.github.io/2020/05/08/MySQLPerformance/</loc>
     
     <lastmod>2020-11-19T02:48:55.535Z</lastmod>
@@ -37,23 +65,9 @@
   </url>
   
   <url>
-    <loc>https://jiawea.github.io/2020/06/26/TCP-IP/</loc>
-    
-    <lastmod>2020-11-19T02:48:14.314Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://jiawea.github.io/2020/08/22/MySQL-Update/</loc>
     
     <lastmod>2020-11-19T02:47:59.647Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://jiawea.github.io/about/index.html</loc>
-    
-    <lastmod>2020-11-19T02:46:14.744Z</lastmod>
     
   </url>
   
@@ -114,23 +128,9 @@
   </url>
   
   <url>
-    <loc>https://jiawea.github.io/2020/05/27/Go_variable/</loc>
-    
-    <lastmod>2020-06-10T01:13:55.507Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://jiawea.github.io/2020/03/27/WHAT-IS-RPC/</loc>
     
     <lastmod>2020-06-10T01:13:22.706Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://jiawea.github.io/2020/05/24/Redis/</loc>
-    
-    <lastmod>2020-06-10T01:12:56.119Z</lastmod>
     
   </url>
   
