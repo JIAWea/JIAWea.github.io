@@ -91,7 +91,7 @@
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://jiawea.github.io/static/mysql/liucheng.png">
 <meta property="og:image" content="https://jiawea.github.io/static/mysql/zxliucheng.png">
-<meta property="og:updated_time" content="2020-11-19T02:47:59.647Z">
+<meta property="og:updated_time" content="2020-11-21T04:44:17.292Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="MySQL是如何执行SQL更新语句的">
 <meta name="twitter:description" content="用了这么久数据库，却不知道数据库是如何执行我们输入的语句的，经过一番查阅后，记录下执行一条查询和更新SQL语句后，MySQL是如何工作的。 SQL语句基本的执行链路：">
@@ -396,6 +396,9 @@
 <p>那么如果整个数据库的数据都被删除了，那我可以用redo log的记录来恢复吗？</p>
 <p>不能，因为功能的不同，redo log 存储的是物理数据的变更，如果我们内存的数据已经刷到了磁盘了，那redo log的数据就无效了。所以redo log不会存储着历史所有数据的变更，文件的内容会被覆盖的。</p>
 <h4 id="3-3-写入细节"><a href="#3-3-写入细节" class="headerlink" title="3.3 写入细节"></a>3.3 写入细节</h4><p>redo log 是 InnoDB 引擎特有的；binlog 是 MySQL 的 Server 层实现的，所有引擎都可以使用。</p>
+<h5 id="参考资料："><a href="#参考资料：" class="headerlink" title="参考资料："></a>参考资料：</h5><ul>
+<li>极客时间，MySQL45讲</li>
+</ul>
 
       
     </div>
@@ -607,7 +610,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-查询语句是如何执行"><span class="nav-number">1.</span> <span class="nav-text">1 查询语句是如何执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-更新语句是如何执行"><span class="nav-number">2.</span> <span class="nav-text">2 更新语句是如何执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-重要的日志模块"><span class="nav-number">3.</span> <span class="nav-text">2 重要的日志模块</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#redo-log"><span class="nav-number">3.1.</span> <span class="nav-text">redo log</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undo-log"><span class="nav-number">3.2.</span> <span class="nav-text">undo log</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#binlog"><span class="nav-number">3.3.</span> <span class="nav-text">binlog</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#复制和恢复数据"><span class="nav-number">3.4.</span> <span class="nav-text">复制和恢复数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#执行流程"><span class="nav-number">3.5.</span> <span class="nav-text">执行流程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-redo-log和binlog的不同"><span class="nav-number">4.</span> <span class="nav-text">3 redo log和binlog的不同</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-存储上"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 存储上</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-功能"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 功能</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-写入细节"><span class="nav-number">4.3.</span> <span class="nav-text">3.3 写入细节</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-查询语句是如何执行"><span class="nav-number">1.</span> <span class="nav-text">1 查询语句是如何执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-更新语句是如何执行"><span class="nav-number">2.</span> <span class="nav-text">2 更新语句是如何执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-重要的日志模块"><span class="nav-number">3.</span> <span class="nav-text">2 重要的日志模块</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#redo-log"><span class="nav-number">3.1.</span> <span class="nav-text">redo log</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undo-log"><span class="nav-number">3.2.</span> <span class="nav-text">undo log</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#binlog"><span class="nav-number">3.3.</span> <span class="nav-text">binlog</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#复制和恢复数据"><span class="nav-number">3.4.</span> <span class="nav-text">复制和恢复数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#执行流程"><span class="nav-number">3.5.</span> <span class="nav-text">执行流程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-redo-log和binlog的不同"><span class="nav-number">4.</span> <span class="nav-text">3 redo log和binlog的不同</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-存储上"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 存储上</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-功能"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 功能</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-写入细节"><span class="nav-number">4.3.</span> <span class="nav-text">3.3 写入细节</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#参考资料："><span class="nav-number">4.3.1.</span> <span class="nav-text">参考资料：</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>

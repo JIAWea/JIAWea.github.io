@@ -2,9 +2,16 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://jiawea.github.io/2020/08/22/MySQL-Update/</loc>
+    
+    <lastmod>2020-11-21T04:44:17.292Z</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://jiawea.github.io/2020/11/21/Goroutine/</loc>
     
-    <lastmod>2020-11-21T04:22:25.937Z</lastmod>
+    <lastmod>2020-11-21T04:43:30.105Z</lastmod>
     
   </url>
   
@@ -68,13 +75,6 @@
     <loc>https://jiawea.github.io/2020/05/08/MySQLPerformance/</loc>
     
     <lastmod>2020-11-19T02:48:55.535Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://jiawea.github.io/2020/08/22/MySQL-Update/</loc>
-    
-    <lastmod>2020-11-19T02:47:59.647Z</lastmod>
     
   </url>
   
