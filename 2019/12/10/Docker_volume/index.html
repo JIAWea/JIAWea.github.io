@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/static/blogImg/ray.png?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Docker,volume,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Ray's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="数据卷默认情况下，在容器内创建的所有文件都存储在可写容器层上。这意味着：  当该容器不再存在时，数据将不会持久保存，并且如果另一个进程需要它，则可能很难从容器中取出数据。 容器的可写层与运行容器的主机紧密耦合。您不能轻易地将数据移动到其他地方。 写入容器的可写层需要 存储驱动程序来管理文件系统。存储驱动程序使用Linux内核提供联合文件系统。与使用直接写入主机文件系统的数据卷相比，这种额外的抽象降">
+<meta name="keywords" content="Docker,volume">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Docker之数据卷volume">
+<meta property="og:url" content="https://jiawea.github.io/2019/12/10/Docker_volume/index.html">
+<meta property="og:site_name" content="Ray&#39;s blog">
+<meta property="og:description" content="数据卷默认情况下，在容器内创建的所有文件都存储在可写容器层上。这意味着：  当该容器不再存在时，数据将不会持久保存，并且如果另一个进程需要它，则可能很难从容器中取出数据。 容器的可写层与运行容器的主机紧密耦合。您不能轻易地将数据移动到其他地方。 写入容器的可写层需要 存储驱动程序来管理文件系统。存储驱动程序使用Linux内核提供联合文件系统。与使用直接写入主机文件系统的数据卷相比，这种额外的抽象降">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://jiawea.github.io/static/blogImg/DockerVolume.jpg">
+<meta property="og:updated_time" content="2020-11-24T02:18:33.434Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Docker之数据卷volume">
+<meta name="twitter:description" content="数据卷默认情况下，在容器内创建的所有文件都存储在可写容器层上。这意味着：  当该容器不再存在时，数据将不会持久保存，并且如果另一个进程需要它，则可能很难从容器中取出数据。 容器的可写层与运行容器的主机紧密耦合。您不能轻易地将数据移动到其他地方。 写入容器的可写层需要 存储驱动程序来管理文件系统。存储驱动程序使用Linux内核提供联合文件系统。与使用直接写入主机文件系统的数据卷相比，这种额外的抽象降">
+<meta name="twitter:image" content="https://jiawea.github.io/static/blogImg/DockerVolume.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://jiawea.github.io/2019/12/10/Docker_volume/">
+
+
+
+
+
+  <title>Docker之数据卷volume | Ray's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Ray's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Coding...</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://jiawea.github.io/2019/12/10/Docker_volume/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ray Wong">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/static/blogImg/ray.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ray's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Docker之数据卷volume</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-12-10T11:48:02+08:00">
+                2019-12-10
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Docker/" itemprop="url" rel="index">
+                    <span itemprop="name">Docker</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p><strong>数据卷</strong><br>默认情况下，在容器内创建的所有文件都存储在可写容器层上。这意味着：</p>
+<ul>
+<li>当该容器不再存在时，数据将不会持久保存，并且如果另一个进程需要它，则可能很难从容器中取出数据。</li>
+<li>容器的可写层与运行容器的主机紧密耦合。您不能轻易地将数据移动到其他地方。</li>
+<li>写入容器的可写层需要 存储驱动程序来管理文件系统。存储驱动程序使用Linux内核提供联合文件系统。与使用直接写入主机文件系统的数据卷相比，这种额外的抽象降低了性能 。</li>
+</ul>
+<center><img src="/static/blogImg/DockerVolume.jpg" alt="avatar"></center>
+
+<a id="more"></a>
+<p>Docker为容器提供了两个选项来将文件存储在主机中，以便即使容器停止后文件也可以持久存储：</p>
+<ul>
+<li>bind mount（绑定安装）</li>
+<li>volume（数据卷）</li>
+</ul>
+<h3 id="volume："><a href="#volume：" class="headerlink" title="volume："></a>volume：</h3><p>是一个可供一个或多个容器使用的特殊目录，它绕过 UFS，可以提供很多有用的特性：</p>
+<ul>
+<li>数据卷 可以在容器之间共享和重用</li>
+<li>对 数据卷 的修改会立马生效</li>
+<li>对 数据卷 的更新，不会影响镜像</li>
+<li>数据卷 默认会一直存在，即使容器被删除</li>
+</ul>
+<h3 id="bind-mount："><a href="#bind-mount：" class="headerlink" title="bind mount："></a>bind mount：</h3><ul>
+<li>文件或目录由主机上的完整路径引用。</li>
+<li>该文件或目录不需要在Docker主机上已经存在。如果尚不存在，则按需创建。</li>
+<li>性能非常好，但是它们依赖于具有特定目录结构的主机文件系统。</li>
+</ul>
+<p><strong>注意：可以通过容器中运行的进程来更改主机文件系统 ，包括创建，修改或删除重要的系统文件或目录，存在安全隐患</strong></p>
+<h2 id="创建数据卷"><a href="#创建数据卷" class="headerlink" title="创建数据卷"></a>创建数据卷</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ docker volume create my-vol</span><br></pre></td></tr></table></figure>
+<p>查看所有的 数据卷<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ docker volume ls</span><br><span class="line">local               my-vol</span><br></pre></td></tr></table></figure></p>
+<p>在主机里使用以下命令可以查看指定 数据卷 的信息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ docker volume inspect my-vol</span><br><span class="line"></span><br><span class="line">[</span><br><span class="line">    &#123;</span><br><span class="line">        &quot;Driver&quot;: &quot;local&quot;,</span><br><span class="line">        &quot;Labels&quot;: &#123;&#125;,</span><br><span class="line">        &quot;Mountpoint&quot;: &quot;/var/lib/docker/volumes/my-vol/_data&quot;,</span><br><span class="line">        &quot;Name&quot;: &quot;my-vol&quot;,</span><br><span class="line">        &quot;Options&quot;: &#123;&#125;,</span><br><span class="line">        &quot;Scope&quot;: &quot;local&quot;</span><br><span class="line">    &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure></p>
+<h3 id="查看数据卷的具体信息"><a href="#查看数据卷的具体信息" class="headerlink" title="查看数据卷的具体信息"></a>查看数据卷的具体信息</h3><p>在主机里使用以下命令可以查看 web 容器的信息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$ docker inspect web</span><br><span class="line">数据卷 信息在 &quot;Mounts&quot; Key 下面</span><br><span class="line"></span><br><span class="line">&quot;Mounts&quot;: [</span><br><span class="line">    &#123;</span><br><span class="line">        &quot;Type&quot;: &quot;volume&quot;,</span><br><span class="line">        &quot;Name&quot;: &quot;my-vol&quot;,</span><br><span class="line">        &quot;Source&quot;: &quot;/var/lib/docker/volumes/my-vol/_data&quot;,</span><br><span class="line">        &quot;Destination&quot;: &quot;/app&quot;,</span><br><span class="line">        &quot;Driver&quot;: &quot;local&quot;,</span><br><span class="line">        &quot;Mode&quot;: &quot;&quot;,</span><br><span class="line">        &quot;RW&quot;: true,</span><br><span class="line">        &quot;Propagation&quot;: &quot;&quot;</span><br><span class="line">    &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure></p>
+<h3 id="启动一个挂载数据卷的容器"><a href="#启动一个挂载数据卷的容器" class="headerlink" title="启动一个挂载数据卷的容器"></a>启动一个挂载数据卷的容器</h3><p>在用 docker run 命令的时候，使用 <code>--mount</code> 标记或者直接使用<code>-v</code>来将 数据卷 挂载到容器里。在一次 docker run 中可以挂载多个 数据卷。</p>
+<p>下面创建一个名为 web 的容器，并加载一个 数据卷 到容器的 /webapp 目录。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ docker run -d -P \</span><br><span class="line">    --name web \</span><br><span class="line">    # -v my-vol:/wepapp \</span><br><span class="line">    --mount source=my-vol,target=/webapp \</span><br><span class="line">    training/webapp \</span><br><span class="line">    python app.py</span><br></pre></td></tr></table></figure></p>
+<h3 id="删除数据卷"><a href="#删除数据卷" class="headerlink" title="删除数据卷"></a>删除数据卷</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ docker volume rm my-vol</span><br></pre></td></tr></table></figure>
+<p>数据卷 是被设计用来持久化数据的，它的生命周期独立于容器，Docker 不会在容器被删除后自动删除 数据卷，并且也不存在垃圾回收这样的机制来处理没有任何容器引用的 数据卷。如果需要在删除容器的同时移除数据卷。可以在删除容器的时候使用<code>docker rm -v</code> 这个命令。</p>
+<p>无主的数据卷可能会占据很多空间，要清理请使用以下命令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ docker volume prune</span><br></pre></td></tr></table></figure></p>
+<p>在删除容器的时候也可使用<code>-v</code>来删除数据卷或者在启动容器是加上<code>--rm</code>，如：</p>
+<ul>
+<li><code>docker rm -v 容器</code></li>
+<li><code>docker run --rm</code></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Docker/" rel="tag"># Docker</a>
+          
+            <a href="/tags/volume/" rel="tag"># volume</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/11/08/Algorithm-SeqList/" rel="next" title="数据结构之顺序表">
+                <i class="fa fa-chevron-left"></i> 数据结构之顺序表
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/12/10/Algorithm-linked-list/" rel="prev" title="数据结构之链表">
+                数据结构之链表 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/static/blogImg/ray.png" alt="Ray Wong">
+            
+              <p class="site-author-name" itemprop="name">Ray Wong</p>
+              <p class="site-description motion-element" itemprop="description">Peace & Love</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">22</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JIAWea" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.cnblogs.com/ray-h/" target="_blank" title="cnblog">
+                      
+                        <i class="fa fa-fw fa-globe"></i>cnblog</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://wpa.qq.com/msgrd?v=3&uin=1552937000&site=qq&menu=yes" target="_blank" title="QQ">
+                      
+                        <i class="fa fa-fw fa-globe"></i>QQ</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:rayhwong@126.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#volume："><span class="nav-number">1.</span> <span class="nav-text">volume：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bind-mount："><span class="nav-number">2.</span> <span class="nav-text">bind mount：</span></a></li></ol><li class="nav-item nav-level-2"><a class="nav-link" href="#创建数据卷"><span class="nav-number"></span> <span class="nav-text">创建数据卷</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#查看数据卷的具体信息"><span class="nav-number">1.</span> <span class="nav-text">查看数据卷的具体信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启动一个挂载数据卷的容器"><span class="nav-number">2.</span> <span class="nav-text">启动一个挂载数据卷的容器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#删除数据卷"><span class="nav-number">3.</span> <span class="nav-text">删除数据卷</span></a></li></ol></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ray</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

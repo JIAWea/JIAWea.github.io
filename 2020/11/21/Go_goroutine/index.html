@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/static/blogImg/ray.png?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Golang,Goroutine,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Ray's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="1.介绍Golang 中的并发指的是一个函数拥有独立于其他函数运行的能力，当创建一个goroutine时，Go 会将其视为一个独立的工作单元，然后会被调度到可用的逻辑处理器上执行。 Go 语言运行时的调度器能够管理所有的goroutine并为其分配执行时间。调度器是在操作系统之上的，将操作系统的线程与程序运行时的逻辑处理器绑定，并在逻辑处理器上运行goroutine。调度器在任何给定的时间，都会控">
+<meta name="keywords" content="Golang,Goroutine">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Golang并发之Goroutine">
+<meta property="og:url" content="https://jiawea.github.io/2020/11/21/Go_goroutine/index.html">
+<meta property="og:site_name" content="Ray&#39;s blog">
+<meta property="og:description" content="1.介绍Golang 中的并发指的是一个函数拥有独立于其他函数运行的能力，当创建一个goroutine时，Go 会将其视为一个独立的工作单元，然后会被调度到可用的逻辑处理器上执行。 Go 语言运行时的调度器能够管理所有的goroutine并为其分配执行时间。调度器是在操作系统之上的，将操作系统的线程与程序运行时的逻辑处理器绑定，并在逻辑处理器上运行goroutine。调度器在任何给定的时间，都会控">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://jiawea.github.io/static/goroutine/process.png">
+<meta property="og:image" content="https://jiawea.github.io/static/goroutine/gpm-1.png">
+<meta property="og:image" content="https://jiawea.github.io/static/goroutine/gpm-2.png">
+<meta property="og:updated_time" content="2020-11-24T06:55:25.334Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Golang并发之Goroutine">
+<meta name="twitter:description" content="1.介绍Golang 中的并发指的是一个函数拥有独立于其他函数运行的能力，当创建一个goroutine时，Go 会将其视为一个独立的工作单元，然后会被调度到可用的逻辑处理器上执行。 Go 语言运行时的调度器能够管理所有的goroutine并为其分配执行时间。调度器是在操作系统之上的，将操作系统的线程与程序运行时的逻辑处理器绑定，并在逻辑处理器上运行goroutine。调度器在任何给定的时间，都会控">
+<meta name="twitter:image" content="https://jiawea.github.io/static/goroutine/process.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://jiawea.github.io/2020/11/21/Go_goroutine/">
+
+
+
+
+
+  <title>Golang并发之Goroutine | Ray's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Ray's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Coding...</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://jiawea.github.io/2020/11/21/Go_goroutine/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ray Wong">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/static/blogImg/ray.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ray's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Golang并发之Goroutine</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-11-21T10:44:18+08:00">
+                2020-11-21
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/后端/" itemprop="url" rel="index">
+                    <span itemprop="name">后端</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="1-介绍"><a href="#1-介绍" class="headerlink" title="1.介绍"></a>1.介绍</h3><p>Golang 中的并发指的是一个函数拥有独立于其他函数运行的能力，当创建一个<code>goroutine</code>时，Go 会将其视为一个独立的工作单元，然后会被调度到可用的逻辑处理器上执行。 Go 语言运行时的调度器能够管理所有的<code>goroutine</code>并为其分配执行时间。调度器是在操作系统之上的，将操作系统的线程与程序运行时的逻辑处理器绑定，并在逻辑处理器上运行<code>goroutine</code>。调度器在任何给定的时间，都会控制哪个<code>goroutine</code>在哪个逻辑处理器上执行。</p>
+<p>Golang 的并发同步模型来自一个叫做<strong>通讯顺序程序（Communicating Sequential Processes, CSP）</strong>的范型。<code>CSP</code>是一种消息传递模型。在<code>goroutine</code>之间同步和传递数据是通过通道<code>channel</code>实现的，而不是通过对数据加锁来实现同步访问。</p>
+<a id="more"></a>
+<h3 id="进程与线程"><a href="#进程与线程" class="headerlink" title="进程与线程"></a>进程与线程</h3><p>什么是进程(process)和线程(thread)？<br>当应用程序在运行时，操作系统就会为其启动一个进程。可以将这个进程看成作一个包含了应用程序在运行中需要用到和维护的各种资源的容器。</p>
+<p>下图展示了一个包含所有可能分配的常用资源的进程。这些资源包括但不限于内存地址空间、文件和设备的句柄以及线程。一个线程是一个<strong>执行空间</strong>，这个空间会被操作系统调度至物理处理器上来运行函数中的代码。每个进程至少包含一个线程，每个进程的初始化线程被称为<strong>主线程</strong>，一个进程里的所有线程共享所有资源，当主线程终止时，应用程序也会停止。</p>
+<center><img src="/static/goroutine/process.png" alt="进程与线程"></center>
+
+<h3 id="并发"><a href="#并发" class="headerlink" title="并发"></a>并发</h3><p>操作系统会在物理处理器上调度线程来运行，而 Go 语言的运行时会在逻辑处理器上调度<code>goroutine</code>来运行。每个逻辑处理器都分别绑定到单个操作系统线程。</p>
+<p>在下图中可以看到操作系统线程、逻辑处理器和本地运行队列之间的关系。如果创建一个<code>goroutine</code>并准备运行，这个<code>goroutine</code>就会被放到调度器的全局运行队列中。之后调度器就会将这些队列中的<code>goroutine</code>分配给一个逻辑处理器（单进程），并放到逻辑处理器对应的本地运行队列中。本地运行队列中的<code>goroutine</code>会一直等待直到自己被分配的逻辑处理器执行。</p>
+<center><img src="/static/goroutine/gpm-1.png" alt="GPM"></center>
+
+<p>有时正在运行的<code>goroutine</code>需要执行一个阻塞的系统调用时，如打开一个文件。当这类调用发生时，线程和<code>goroutine</code>会从逻辑处理器上分离，该线程会继续阻塞，等待系统调用的返回。此时逻辑处理器就失去了用来运行的线程，所以调度器会创建一个新的线程并绑定到该逻辑处理器上。然后调度器会从本地运行队列里选择另外一个<code>goroutine</code>来运行，一旦被阻塞的系统调用执行完成并返回，其<code>goroutine</code>会被放回本地运行队列，而之前的线程会被保留，以便之后使用。</p>
+<p>如果一个<code>goroutine</code>需要做一个网络<code>I/O</code>调用，流程上会有些不一样。<code>goroutine</code>会和逻辑处理器分离，并移动到集成了<strong>网络轮训器</strong>，一旦该轮训器指示某个网络读写操作就绪，对应的<code>goroutine</code>就会重新分配到逻辑处理器上完成操作。</p>
+<h3 id="并行"><a href="#并行" class="headerlink" title="并行"></a>并行</h3><p>并发（concurrency）不是并行（parallelism）。并行是让多个代码片段同时在不同的物理处理器上执行。并行的关键是同时做很多事情，而并发是同时管理很多事情，这些事可能只做了一半就暂停去做别的事情了。</p>
+<p>如果希望<code>goroutine</code>并行，必须使用多于一个逻辑处理器。当有多个逻辑处理器时，调度器会将<code>goroutine</code>平等分配到每个逻辑处理器上。这会让<code>goroutine</code>在不同的线程上运行。当然运行的机器要有多个物理处理器，否则达不到并行的效果。</p>
+<center><img src="/static/goroutine/gpm-2.png" alt="GPM"></center>
+
+<h3 id="示例"><a href="#示例" class="headerlink" title="示例"></a>示例</h3><ol>
+<li>分配一个逻辑处理器，启动两个<code>goroutine</code>，分别打印出5000以内的素数。</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">// 这个示例程序展示goroutine调度器是如何在单个线程上</span><br><span class="line">// 切分时间片的</span><br><span class="line">package main</span><br><span class="line"></span><br><span class="line">import (</span><br><span class="line">	&quot;fmt&quot;</span><br><span class="line">	&quot;runtime&quot;</span><br><span class="line">	&quot;sync&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">//   wg用来等待程序完成</span><br><span class="line">var wg sync.WaitGroup</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line">	// 分配一个逻辑处理器给调度器使用</span><br><span class="line">	runtime.GOMAXPROCS(1)</span><br><span class="line">	wg.Add(2)</span><br><span class="line">	fmt.Println(&quot;Create Goroutines&quot;)</span><br><span class="line"></span><br><span class="line">	go printPrime(&quot;A&quot;)</span><br><span class="line">	go printPrime(&quot;B&quot;)</span><br><span class="line"></span><br><span class="line">	fmt.Println(&quot;Waiting To   Finish&quot;)</span><br><span class="line">	wg.Wait()</span><br><span class="line">	fmt.Println(&quot;Terminating Program&quot;)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// printPrime 显示5000以内的素数值(大于1，除了1和本身外不能被整除)</span><br><span class="line">func printPrime(prefix string) &#123;</span><br><span class="line">	defer wg.Done()</span><br><span class="line">next:</span><br><span class="line">	for outer := 2; outer &lt; 5000; outer++ &#123;</span><br><span class="line">		for inner := 2; inner &lt; outer; inner++ &#123;</span><br><span class="line">			if outer%inner == 0 &#123;</span><br><span class="line">				continue next</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">		fmt.Printf(&quot;%s:%d\n&quot;, prefix, outer)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	fmt.Println(&quot;Completed&quot;, prefix)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>执行完上面的代码后，你会发现在并发情况下，有可能 A 先执行完，也有可能 B 先执行完，因为当 goroutine 被调度器分配给逻辑处理器执行是有执行时间的，当 A 或 B 没执行完时，有可能被切换到另一个 goroutine 执行了，所以你看到的结果会出现：A 和 B 都是各自打印了一段最终才是结束的。</p>
+<p>如果把<code>runtime.GOMAXPROCS(1)</code>改成 <code>2</code> 呢？<br>这时候 A 和 B是并行执行的，而不是并发了。</p>
+<h5 id="参考书籍："><a href="#参考书籍：" class="headerlink" title="参考书籍："></a>参考书籍：</h5><ul>
+<li>Go语言实战</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Golang/" rel="tag"># Golang</a>
+          
+            <a href="/tags/Goroutine/" rel="tag"># Goroutine</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/08/22/MySQL_update/" rel="next" title="MySQL是如何执行SQL更新语句的">
+                <i class="fa fa-chevron-left"></i> MySQL是如何执行SQL更新语句的
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/11/22/Go_map/" rel="prev" title="Golang map实现原理">
+                Golang map实现原理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/static/blogImg/ray.png" alt="Ray Wong">
+            
+              <p class="site-author-name" itemprop="name">Ray Wong</p>
+              <p class="site-description motion-element" itemprop="description">Peace & Love</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">22</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JIAWea" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.cnblogs.com/ray-h/" target="_blank" title="cnblog">
+                      
+                        <i class="fa fa-fw fa-globe"></i>cnblog</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://wpa.qq.com/msgrd?v=3&uin=1552937000&site=qq&menu=yes" target="_blank" title="QQ">
+                      
+                        <i class="fa fa-fw fa-globe"></i>QQ</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:rayhwong@126.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-介绍"><span class="nav-number">1.</span> <span class="nav-text">1.介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#进程与线程"><span class="nav-number">2.</span> <span class="nav-text">进程与线程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#并发"><span class="nav-number">3.</span> <span class="nav-text">并发</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#并行"><span class="nav-number">4.</span> <span class="nav-text">并行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#示例"><span class="nav-number">5.</span> <span class="nav-text">示例</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#参考书籍："><span class="nav-number">5.0.1.</span> <span class="nav-text">参考书籍：</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ray</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

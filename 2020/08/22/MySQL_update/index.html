@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/static/blogImg/ray.png?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="MySQL,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Ray's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="用了这么久数据库，却不知道数据库是如何执行我们输入的语句的，经过一番查阅后，记录下执行一条查询和更新SQL语句后，MySQL是如何工作的。 SQL语句基本的执行链路：">
+<meta name="keywords" content="MySQL">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MySQL是如何执行SQL更新语句的">
+<meta property="og:url" content="https://jiawea.github.io/2020/08/22/MySQL_update/index.html">
+<meta property="og:site_name" content="Ray&#39;s blog">
+<meta property="og:description" content="用了这么久数据库，却不知道数据库是如何执行我们输入的语句的，经过一番查阅后，记录下执行一条查询和更新SQL语句后，MySQL是如何工作的。 SQL语句基本的执行链路：">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://jiawea.github.io/static/mysql/liucheng.png">
+<meta property="og:image" content="https://jiawea.github.io/static/mysql/zxliucheng.png">
+<meta property="og:updated_time" content="2020-11-24T02:17:39.575Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MySQL是如何执行SQL更新语句的">
+<meta name="twitter:description" content="用了这么久数据库，却不知道数据库是如何执行我们输入的语句的，经过一番查阅后，记录下执行一条查询和更新SQL语句后，MySQL是如何工作的。 SQL语句基本的执行链路：">
+<meta name="twitter:image" content="https://jiawea.github.io/static/mysql/liucheng.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://jiawea.github.io/2020/08/22/MySQL_update/">
+
+
+
+
+
+  <title>MySQL是如何执行SQL更新语句的 | Ray's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Ray's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Coding...</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://jiawea.github.io/2020/08/22/MySQL_update/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ray Wong">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/static/blogImg/ray.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ray's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">MySQL是如何执行SQL更新语句的</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-08-22T14:27:58+08:00">
+                2020-08-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/数据库/" itemprop="url" rel="index">
+                    <span itemprop="name">数据库</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>用了这么久数据库，却不知道数据库是如何执行我们输入的语句的，经过一番查阅后，记录下执行一条查询和更新SQL语句后，MySQL是如何工作的。</p>
+<p>SQL语句基本的执行链路：</p>
+<center><img src="/static/mysql/liucheng.png" alt="流程"></center>
+
+<a id="more"></a>
+<h3 id="1-查询语句是如何执行"><a href="#1-查询语句是如何执行" class="headerlink" title="1 查询语句是如何执行"></a>1 查询语句是如何执行</h3><p>一条查询语句的执行过程一般是经过连接器、分析器、优化器、执行器等功能模块，最后到达存储引擎</p>
+<h3 id="2-更新语句是如何执行"><a href="#2-更新语句是如何执行" class="headerlink" title="2 更新语句是如何执行"></a>2 更新语句是如何执行</h3><p>一条更新语句的执行过程和查询的执行过程是一样的：<br>以执行这条SQL语句为例。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; update T set c=c+1 where ID=2;</span><br></pre></td></tr></table></figure></p>
+<ol>
+<li>连接器：连接数据库。</li>
+<li>分析器：分析器通过词法和语法解析知道这是一条更新语句，</li>
+<li>优化器：决定使用ID这个索引。</li>
+<li>执行器：向存储引擎读取这一行数据，然后更新并写入存储引擎。</li>
+</ol>
+<h3 id="2-重要的日志模块"><a href="#2-重要的日志模块" class="headerlink" title="2 重要的日志模块"></a>2 重要的日志模块</h3><h4 id="redo-log"><a href="#redo-log" class="headerlink" title="redo log"></a>redo log</h4><p>让我们继续以上面一条SQL语句为例，看看<code>redo log</code>是起到了什么作用。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; update T set c=c+1 where ID=2;</span><br></pre></td></tr></table></figure></p>
+<p>MySQL在执行这条语句时，肯定是先把<code>ID=2</code>这条数据从搜索引擎中拿出来，然后修改<code>c</code>字段，写入存储引擎，最后存储引擎刷入磁盘，这没问题吧？</p>
+<p>MySQL的基本存储结构是<code>页</code>，所以MySQL是先把这条记录所在的<code>页</code>找到，然后再把该页的数据加载到内存，在内存中找到对应的数据后修改，再刷回磁盘。</p>
+<p><strong>问题1</strong><br>如果在内存把数据修改了，但是还没来得及刷回磁盘数据库却突然岩机了怎么办？很显然数据就丢失了，这和我们预期的不一样。</p>
+<p><strong>如何解决</strong><br>也许你会说很简单阿，在事务提交之前写入磁盘就行了。</p>
+<p><strong>问题2</strong><br>如果每一次更新操作都需要刷回磁盘，这整个过程<code>IO</code>成本、查找记录成本都很高。一个页有<code>16kb</code>大小，只改一点内容就操作一次磁盘，为了解决这个问题。MySQL引入了<code>WAL</code>这么一个概念（Write-Ahead Logging），先写入日志，再写磁盘，至于什么时候再写入磁盘，会有配置供我们设置。</p>
+<p>此时就引入<code>redo log</code>，当数据修改的时候，不仅在内存中操作，还会在<code>redo log</code>中记录这次操作，此时<code>redo log</code>的状态为<code>prepare</code>。当事务提交的时<code>redo log</code>日志将从<code>prepare</code>状态修改为<code>commit</code>，也就是我们所说的<strong>两阶段提交</strong>，然后再根据需要将更新完的数据刷入磁盘。当数据库岩机重启的时候，之前提交的记录都不会丢失，会恢复<code>redo log</code>中的内容到数据库，再根据<code>undo log</code>和<code>binlog</code>决定回滚还是提交数据。这个能力称为<code>crash-safe</code>。</p>
+<p><code>redo log</code>记录的是物理变化，即内容修改（在某个数据页上做了什么修改）。它也是需要磁盘的，但它的好处是<code>顺序IO</code>，比<code>随机IO</code>快多了。</p>
+<h4 id="undo-log"><a href="#undo-log" class="headerlink" title="undo log"></a>undo log</h4><p><code>undo log</code>是用来保证事务的原子性，它记录数据被修改前的值，以便在事务失败的时候进行<code>rollback</code>。举个栗子，当事务提交成功后，在将<code>redo log</code>从<code>perpare</code>状态修改成<code>commit</code>时系统异常重启了，那么<code>redo log</code>会根据自身的状态并结合<code>undo log</code>进行回滚。</p>
+<h4 id="binlog"><a href="#binlog" class="headerlink" title="binlog"></a>binlog</h4><p>MySQL 整体来看，其实就有两块：一块是 Server 层，它主要做的是 MySQL 功能层面的事情；还有一块是引擎层，负责存储相关的具体事宜。<code>redo log</code>是<code>InnoDB</code>引擎特有的日志，而 Server 层也有自己的日志，称为 <code>binlog</code>（归档日志）。</p>
+<p><code>binlog</code>记录了数据库表结构和表数据变更，比如<code>update/delete/insert/truncate/create</code>。它不会记录<code>select</code>（因为这没有对表没有进行变更）。</p>
+<p>我们可以简单理解为：存储着每条变更的SQL语句。</p>
+<h4 id="复制和恢复数据"><a href="#复制和恢复数据" class="headerlink" title="复制和恢复数据"></a>复制和恢复数据</h4><p>主要有两个作用：</p>
+<ul>
+<li>MySQL在公司使用的时候往往都是一主多从结构的，从服务器需要与主服务器的数据保持一致，这就是通过binlog来实现的。</li>
+<li>数据库的数据被干掉了，我们可以通过binlog来对数据进行恢复。</li>
+</ul>
+<p>因为binlog记录了数据库表的变更，所以我们可以复制（主从复制)和恢复数据。</p>
+<h4 id="执行流程"><a href="#执行流程" class="headerlink" title="执行流程"></a>执行流程</h4><p>有了对这两个日志的概念性理解，我们再来看执行器和<code>InnoDB</code>引擎在执行上面简单的<code>update</code>语句时的内部流程。</p>
+<ol>
+<li>执行器先找引擎取 ID=2 这一行。ID 是主键，引擎直接用树搜索找到这一行。如果 ID=2 这一行所在的数据页本来就在内存中，就直接返回给执行器；否则，需要先从磁盘读入内存，然后再返回。</li>
+<li>执行器拿到引擎给的行数据，把这个值加上 1，比如原来是 N，现在就是 N+1，得到新的一行数据，再调用引擎接口写入这行新数据。</li>
+<li>引擎将这行新数据更新到内存中，同时将这个更新操作记录到 redo log 里面，此时 redo log 处于 prepare 状态。然后告知执行器执行完成了，随时可以提交事务。</li>
+<li>执行器生成这个操作的 binlog，并把 binlog 写入磁盘。</li>
+<li>执行器调用引擎的提交事务接口，引擎把刚刚写入的 redo log 改成提交（commit）状态，更新完成。</li>
+</ol>
+<p>update 语句的执行流程图：</p>
+<center><img src="/static/mysql/zxliucheng.png" alt="流程"></center>
+
+<h3 id="3-redo-log和binlog的不同"><a href="#3-redo-log和binlog的不同" class="headerlink" title="3 redo log和binlog的不同"></a>3 redo log和binlog的不同</h3><h4 id="3-1-存储上"><a href="#3-1-存储上" class="headerlink" title="3.1 存储上"></a>3.1 存储上</h4><p>redo log 是物理日志，记录的是“在某个数据页上做了什么修改”；binlog 是逻辑日志，记录的是这个语句的原始逻辑，比如“给 ID=2 这一行的 c 字段加 1 ”。</p>
+<h4 id="3-2-功能"><a href="#3-2-功能" class="headerlink" title="3.2 功能"></a>3.2 功能</h4><p>redo log的作用是为<strong>持久化</strong>而生的。写完内存，如果数据库挂了，那我们可以通过redo log来恢复内存还没来得及刷到磁盘的数据，将redo log加载到内存里边，那内存就能恢复到挂掉之前的数据了。</p>
+<p>binlog的作用是复制和恢复而生的。</p>
+<p>主从服务器需要保持数据的一致性，通过binlog来同步数据。<br>如果整个数据库的数据都被删除了，binlog存储着所有的数据变更情况，那么可以通过binlog来对数据进行恢复。</p>
+<p>那么如果整个数据库的数据都被删除了，那我可以用redo log的记录来恢复吗？</p>
+<p>不能，因为功能的不同，redo log 存储的是物理数据的变更，如果我们内存的数据已经刷到了磁盘了，那redo log的数据就无效了。所以redo log不会存储着历史所有数据的变更，文件的内容会被覆盖的。</p>
+<h4 id="3-3-写入细节"><a href="#3-3-写入细节" class="headerlink" title="3.3 写入细节"></a>3.3 写入细节</h4><p>redo log 是 InnoDB 引擎特有的；binlog 是 MySQL 的 Server 层实现的，所有引擎都可以使用。</p>
+<h5 id="参考资料："><a href="#参考资料：" class="headerlink" title="参考资料："></a>参考资料：</h5><ul>
+<li>极客时间，MySQL45讲</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/MySQL/" rel="tag"># MySQL</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/07/18/MySQL_block/" rel="next" title="MySQL事务和锁">
+                <i class="fa fa-chevron-left"></i> MySQL事务和锁
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/11/21/Go_goroutine/" rel="prev" title="Golang并发之Goroutine">
+                Golang并发之Goroutine <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/static/blogImg/ray.png" alt="Ray Wong">
+            
+              <p class="site-author-name" itemprop="name">Ray Wong</p>
+              <p class="site-description motion-element" itemprop="description">Peace & Love</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">22</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JIAWea" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.cnblogs.com/ray-h/" target="_blank" title="cnblog">
+                      
+                        <i class="fa fa-fw fa-globe"></i>cnblog</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://wpa.qq.com/msgrd?v=3&uin=1552937000&site=qq&menu=yes" target="_blank" title="QQ">
+                      
+                        <i class="fa fa-fw fa-globe"></i>QQ</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:rayhwong@126.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-查询语句是如何执行"><span class="nav-number">1.</span> <span class="nav-text">1 查询语句是如何执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-更新语句是如何执行"><span class="nav-number">2.</span> <span class="nav-text">2 更新语句是如何执行</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-重要的日志模块"><span class="nav-number">3.</span> <span class="nav-text">2 重要的日志模块</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#redo-log"><span class="nav-number">3.1.</span> <span class="nav-text">redo log</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#undo-log"><span class="nav-number">3.2.</span> <span class="nav-text">undo log</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#binlog"><span class="nav-number">3.3.</span> <span class="nav-text">binlog</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#复制和恢复数据"><span class="nav-number">3.4.</span> <span class="nav-text">复制和恢复数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#执行流程"><span class="nav-number">3.5.</span> <span class="nav-text">执行流程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-redo-log和binlog的不同"><span class="nav-number">4.</span> <span class="nav-text">3 redo log和binlog的不同</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-存储上"><span class="nav-number">4.1.</span> <span class="nav-text">3.1 存储上</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-功能"><span class="nav-number">4.2.</span> <span class="nav-text">3.2 功能</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-3-写入细节"><span class="nav-number">4.3.</span> <span class="nav-text">3.3 写入细节</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#参考资料："><span class="nav-number">4.3.1.</span> <span class="nav-text">参考资料：</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ray</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

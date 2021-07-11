@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/static/blogImg/ray.png?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Golang,源码,map,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Ray's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="map数据结构在介绍map之前，先来看看它的数据结构，map实际上就是一个散列表，指向一堆桶buckets。通过哈希函数计算出key的值，然后再存储到每个桶bmap中，每个bmap可以存储 8 组键值对。为了加速hash定位桶，bmap里记录了tophash数组，记录了key的哈希高 8 位，通过比较不同键的哈希的高 8 位可以减少访问键值对的次数。 内部结构图：">
+<meta name="keywords" content="Golang,源码,map">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Golang map实现原理">
+<meta property="og:url" content="https://jiawea.github.io/2020/11/22/Go_map/index.html">
+<meta property="og:site_name" content="Ray&#39;s blog">
+<meta property="og:description" content="map数据结构在介绍map之前，先来看看它的数据结构，map实际上就是一个散列表，指向一堆桶buckets。通过哈希函数计算出key的值，然后再存储到每个桶bmap中，每个bmap可以存储 8 组键值对。为了加速hash定位桶，bmap里记录了tophash数组，记录了key的哈希高 8 位，通过比较不同键的哈希的高 8 位可以减少访问键值对的次数。 内部结构图：">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://jiawea.github.io/static/go_map/data_struct.png">
+<meta property="og:updated_time" content="2020-11-24T06:55:09.955Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Golang map实现原理">
+<meta name="twitter:description" content="map数据结构在介绍map之前，先来看看它的数据结构，map实际上就是一个散列表，指向一堆桶buckets。通过哈希函数计算出key的值，然后再存储到每个桶bmap中，每个bmap可以存储 8 组键值对。为了加速hash定位桶，bmap里记录了tophash数组，记录了key的哈希高 8 位，通过比较不同键的哈希的高 8 位可以减少访问键值对的次数。 内部结构图：">
+<meta name="twitter:image" content="https://jiawea.github.io/static/go_map/data_struct.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://jiawea.github.io/2020/11/22/Go_map/">
+
+
+
+
+
+  <title>Golang map实现原理 | Ray's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Ray's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Coding...</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://jiawea.github.io/2020/11/22/Go_map/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ray Wong">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/static/blogImg/ray.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ray's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Golang map实现原理</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-11-22T20:00:54+08:00">
+                2020-11-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/后端/" itemprop="url" rel="index">
+                    <span itemprop="name">后端</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="map数据结构"><a href="#map数据结构" class="headerlink" title="map数据结构"></a>map数据结构</h3><p>在介绍<code>map</code>之前，先来看看它的数据结构，<code>map</code>实际上就是一个散列表，指向一堆桶<code>buckets</code>。通过哈希函数计算出<code>key</code>的值，然后再存储到每个桶<code>bmap</code>中，每个<code>bmap</code>可以存储 8 组键值对。为了加速<code>hash</code>定位桶，<code>bmap</code>里记录了<code>tophash</code>数组，记录了<code>key</code>的哈希高 8 位，通过比较不同键的哈希的高 8 位可以减少访问键值对的次数。</p>
+<p>内部结构图：</p>
+<p><center><img src="/static/go_map/data_struct.png" alt="结构图"></center><br><a id="more"></a></p>
+<p>源码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">type hmap struct &#123;</span><br><span class="line">    count     int   </span><br><span class="line">    flags     uint8             // 状态标示：iterator  = 1，oldIterator = 2，hashWriting = 4，sameSizeGrow = 8；</span><br><span class="line">    B         uint8             // 桶的个数 = 2^B</span><br><span class="line">    noverflow uint16            // 溢出桶的个数，B&lt;16时为精确值，否则为近似值；</span><br><span class="line">    hash0     uint32 </span><br><span class="line"></span><br><span class="line">    buckets    unsafe.Pointer   // 当前桶，长度为（0-2^B）</span><br><span class="line">    oldbuckets unsafe.Pointer   // 扩容时保存的旧桶；</span><br><span class="line">    nevacuate  uintptr          // 迁移数，下一个迁移的桶；</span><br><span class="line"></span><br><span class="line">    extra *mapextra             // 溢出桶</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 额外记录overflow桶信息</span><br><span class="line">type mapextra struct &#123;</span><br><span class="line">    overflow     *[]*bmap       // 没有指针时，溢出桶挂在这；</span><br><span class="line">    oldoverflow  *[]*bmap</span><br><span class="line">    nextOverflow *bmap          // map初始化时，预分配了一些溢出桶；</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 桶结构 （字段会根据key和elem类型动态生成，见下边bmap）</span><br><span class="line">type bmap struct &#123;</span><br><span class="line">  // 记录桶内8个单元的高8位hash值，或标记空桶状态，用于快速定位key</span><br><span class="line">  // emptyRest      = 0 // 此单元为空，且更高索引的单元也为空</span><br><span class="line">  // emptyOne       = 1 // 此单元为空</span><br><span class="line">  // evacuatedX     = 2 // 用于表示扩容迁移到新桶前半段区间</span><br><span class="line">  // evacuatedY     = 3 // 用于表示扩容迁移到新桶后半段区间</span><br><span class="line">  // evacuatedEmpty = 4 // 用于表示此单元已迁移</span><br><span class="line">  // minTopHash     = 5 // 最小的空桶标记值，小于其则是空桶标志</span><br><span class="line">  tophash [bucketCnt]uint8</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// cmd/compile/internal/gc/reflect.go</span><br><span class="line">type bmap struct &#123;</span><br><span class="line">    topbits  [8]uint8           // 每个key哈希值的高8位，加速访问；</span><br><span class="line">    keys     [8]keytype         // 先key后value，节省内存；</span><br><span class="line">    elems    [8]elemtype</span><br><span class="line">    // overflow 溢出桶</span><br><span class="line">    // otyp 类型为指针*Type,</span><br><span class="line">    // 若keytype及elemtype不含指针，则为uintptr</span><br><span class="line">    // 使bmap整体不含指针,避免gc去scan此类map</span><br><span class="line">    overflow otyp</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="hash方式"><a href="#hash方式" class="headerlink" title="hash方式"></a>hash方式</h3><p>哈希表是计算机科学中最重要的数据结构之一，读写性能很高，时间复杂度是<code>O(1)</code>。</p>
+<h4 id="哈希函数"><a href="#哈希函数" class="headerlink" title="哈希函数"></a>哈希函数</h4><p>哈希函数的选择在很大程度上能够决定哈希表的读写性能，尽可能的让哈希函数的结构均匀分布，会减少哈希冲突导致的读写性能变差的情况。</p>
+<h4 id="哈希冲突"><a href="#哈希冲突" class="headerlink" title="哈希冲突"></a>哈希冲突</h4><p>解决哈希冲突一般有两种：</p>
+<p><strong>开放寻址法</strong></p>
+<p>开放寻址法核心思想是对数组中的元素依次探测和比较以判断目标键值对是否存在于哈希表中，即遇到哈希冲突时，就会将键值对写入到下一个不为空的位置。查找对应key会继续查找后面的元素，直到内存为空或者找到目标元素。</p>
+<p><strong>拉链法</strong></p>
+<p>拉链法一般会使用数组加上链表，不过有一些语言会在拉链法的哈希中引入红黑树以优化性能，拉链法会使用链表数组作为哈希底层的数据结构。<br>当我们需要将一个键值对，如 (Key6, Value6) 写入哈希表时，键值对中的键 Key6 都会先经过一个哈希函数，哈希函数返回的哈希会帮助我们选择一个桶，和开放地址法一样，选择桶的方式就是直接对哈希返回的结果取模：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mod := hash(&quot;Key6&quot;) % array.len</span><br></pre></td></tr></table></figure></p>
+<p>选择了桶后就会遍历当前桶中的链表了，在遍历链表的过程中会遇到以下两种情况：</p>
+<ol>
+<li>找到键相同的键值对 —— 更新键对应的值；</li>
+<li>没有找到键相同的键值对 —— 在链表的末尾追加新键值对；</li>
+</ol>
+<h3 id="扩容"><a href="#扩容" class="headerlink" title="扩容"></a>扩容</h3><p>随着哈希表中元素的增加，会逐渐影响哈希的性能，所以我们需要更多的桶和更大的内容保证哈希的读写性能。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">func mapassign(t *maptype, h *hmap, key unsafe.Pointer) unsafe.Pointer &#123;</span><br><span class="line">	...</span><br><span class="line"></span><br><span class="line">    // If we hit the max load factor or we have too many overflow buckets,</span><br><span class="line">	// and we&apos;re not already in the middle of growing, start growing.</span><br><span class="line">	if !h.growing() &amp;&amp; (overLoadFactor(h.count+1, h.B) || tooManyOverflowBuckets(h.noverflow, h.B)) &#123;</span><br><span class="line">		hashGrow(t, h)</span><br><span class="line">		goto again</span><br><span class="line">	&#125;</span><br><span class="line">	...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>扩容条件：</p>
+<ol>
+<li>装载因子<code>overLoadFactor</code>大于 6.5；</li>
+<li>哈希使用了太多溢出桶，次数会等量扩容，垃圾回收会清理老的溢出桶并释放内存，使 <code>bmap</code> 中的键值对更加紧凑，提高性能。</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">装载因子 := 元素数量 / 桶数量</span><br></pre></td></tr></table></figure>
+<p>一般当<code>overLoadFactor</code>大于 6.5 时，会扩容一倍。在扩容的过程中不会一下子把数据全部迁移至新的桶中，采用<strong>渐近式扩容</strong>，<code>buckets</code>指向新桶，<code>oldbuckets</code>指向要迁移的桶，<code>nevacuate</code>表示下一个要迁移的桶，每当对数据进行读写时，都会看是否需要进行部分迁移，以防全部迁移时产生的瞬间抖动。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ul>
+<li>Go 语言使用拉链法来解决哈希碰撞的问题实现了哈希表，它的访问、写入和删除等操作都在编译期间转换成了运行时的函数或者方法。</li>
+<li>哈希在每一个桶中存储键对应哈希的前 8 位，当对哈希进行操作时，这些 tophash 就成为了一级缓存帮助哈希快速遍历桶中元素，每一个桶都只能存储 8 个键值对，一旦当前哈希的某个桶超出 8 个，新的键值对就会被存储到哈希的溢出桶中。</li>
+<li>随着键值对数量的增加，溢出桶的数量和哈希的装载因子也会逐渐升高，超过一定范围就会触发扩容，扩容会将桶的数量翻倍，元素再分配的过程也是在调用写操作时增量进行的，不会造成性能的瞬时巨大抖动。</li>
+</ul>
+<h5 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h5><ul>
+<li><a href="https://github.com/golang/go/blob/36f30ba289e31df033d100b2adb4eaf557f05a34/src/runtime/map.go#L115:6" target="_blank" rel="noopener">Golang源码</a></li>
+<li><a href="https://draveness.me/golang/docs/part2-foundation/ch03-datastructure/golang-hashmap/" target="_blank" rel="noopener">Go语言设计与实现</a></li>
+<li><a href="http://blog.newbmiao.com/2020/02/04/dig101-golang-map.html" target="_blank" rel="noopener">Dig101:Go之读懂map的底层设计</a></li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Golang/" rel="tag"># Golang</a>
+          
+            <a href="/tags/源码/" rel="tag"># 源码</a>
+          
+            <a href="/tags/map/" rel="tag"># map</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/11/21/Go_goroutine/" rel="next" title="Golang并发之Goroutine">
+                <i class="fa fa-chevron-left"></i> Golang并发之Goroutine
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/12/12/Etcd/" rel="prev" title="使用 etcd 作为服务配置中心">
+                使用 etcd 作为服务配置中心 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/static/blogImg/ray.png" alt="Ray Wong">
+            
+              <p class="site-author-name" itemprop="name">Ray Wong</p>
+              <p class="site-description motion-element" itemprop="description">Peace & Love</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">22</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JIAWea" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.cnblogs.com/ray-h/" target="_blank" title="cnblog">
+                      
+                        <i class="fa fa-fw fa-globe"></i>cnblog</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://wpa.qq.com/msgrd?v=3&uin=1552937000&site=qq&menu=yes" target="_blank" title="QQ">
+                      
+                        <i class="fa fa-fw fa-globe"></i>QQ</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:rayhwong@126.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#map数据结构"><span class="nav-number">1.</span> <span class="nav-text">map数据结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#hash方式"><span class="nav-number">2.</span> <span class="nav-text">hash方式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#哈希函数"><span class="nav-number">2.1.</span> <span class="nav-text">哈希函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#哈希冲突"><span class="nav-number">2.2.</span> <span class="nav-text">哈希冲突</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#扩容"><span class="nav-number">3.</span> <span class="nav-text">扩容</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#总结"><span class="nav-number">4.</span> <span class="nav-text">总结</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#参考"><span class="nav-number">4.0.1.</span> <span class="nav-text">参考</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ray</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

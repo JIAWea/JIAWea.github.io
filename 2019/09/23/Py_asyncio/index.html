@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/static/blogImg/ray.png?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="python,异步,asyncio,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Ray's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="同步代码(synchrnous code)我们都很熟悉，就是运行完一个步骤再运行下一个。要在同步代码里面实现”同时”运行多个任务，最简单也是最直观地方式就是运行多个 threads 或者多个 processes。">
+<meta name="keywords" content="python,异步,asyncio">
+<meta property="og:type" content="article">
+<meta property="og:title" content="初识Python asyncio异步编程">
+<meta property="og:url" content="https://jiawea.github.io/2019/09/23/Py_asyncio/index.html">
+<meta property="og:site_name" content="Ray&#39;s blog">
+<meta property="og:description" content="同步代码(synchrnous code)我们都很熟悉，就是运行完一个步骤再运行下一个。要在同步代码里面实现”同时”运行多个任务，最简单也是最直观地方式就是运行多个 threads 或者多个 processes。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-11-24T02:16:53.721Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="初识Python asyncio异步编程">
+<meta name="twitter:description" content="同步代码(synchrnous code)我们都很熟悉，就是运行完一个步骤再运行下一个。要在同步代码里面实现”同时”运行多个任务，最简单也是最直观地方式就是运行多个 threads 或者多个 processes。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://jiawea.github.io/2019/09/23/Py_asyncio/">
+
+
+
+
+
+  <title>初识Python asyncio异步编程 | Ray's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Ray's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Coding...</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://jiawea.github.io/2019/09/23/Py_asyncio/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ray Wong">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/static/blogImg/ray.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ray's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">初识Python asyncio异步编程</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-23T15:58:52+08:00">
+                2019-09-23
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/后端/" itemprop="url" rel="index">
+                    <span itemprop="name">后端</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>同步代码(synchrnous code)<br>我们都很熟悉，就是运行完一个步骤再运行下一个。要在同步代码里面实现”同时”运行多个任务，最简单也是最直观地方式就是运行多个 threads 或者多个 processes。</p>
+<a id="more"></a>
+<p>这个层次的『同时运行』多个任务，是操作系统协助完成的。 也就是操作系统的任务调度系统来决定什么时候运行这个任务，什么时候切换任务，你自己，作为一个应用层的程序员，是没办法进行干预的。</p>
+<p>我相信你也已经听说了什么关于 thread 和 process 的抱怨：process 太重，thread 又要牵涉到很多头条的锁问题。尤其是对于一个 Python 开发者来说，由于GIL（全局解释器锁）的存在，多线程无法真正使用多核，如果你用多线程来运行计算型任务，速度会更慢。</p>
+<p>异步编程与之不同的是，值使用一个进程，不使用 threads，但是也能实现”同时”运行多个任务（这里的任务其实就是函数）。</p>
+<p>这些函数有一个非常 nice 的 feature：必要的可以暂停，把运行的权利交给其他函数。等到时机恰当，又可以恢复之前的状态继续运行。这听上去是不是有点像进程呢？可以暂停，可以恢复运行。只不过进程的调度是操作系统完成的，这些函数的调度是进程自己（或者说程序员你自己）完成的。这也就意味着这将省去了很多计算机的资源，因为进程的调度必然需要大量 syscall，而 syscall 是很昂贵的。</p>
+<h3 id="一-定义一个简单的协程："><a href="#一-定义一个简单的协程：" class="headerlink" title="一 定义一个简单的协程："></a>一 定义一个简单的协程：</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">import asyncio</span><br><span class="line">  </span><br><span class="line">async def execute(x):</span><br><span class="line">    print(&apos;Number:&apos;, x)</span><br><span class="line">    return x</span><br><span class="line">  </span><br><span class="line">coroutine = execute(1)</span><br><span class="line">print(&apos;Coroutine:&apos;, coroutine)</span><br><span class="line">print(&apos;After calling execute&apos;)</span><br><span class="line">  </span><br><span class="line">loop = asyncio.get_event_loop()</span><br><span class="line">task = loop.create_task(coroutine)</span><br><span class="line">print(&apos;Task:&apos;, task)</span><br><span class="line">loop.run_until_complete(task)</span><br><span class="line">print(&apos;Task:&apos;, task)</span><br><span class="line">print(&apos;After calling loop&apos;)</span><br></pre></td></tr></table></figure>
+<p>print(‘Task Result:’, task.result())  这样也能查看task执行的结果</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Coroutine: &lt;coroutine object execute at 0x10e0f7830&gt;</span><br><span class="line">After calling execute</span><br><span class="line">Task: &lt;Task pending coro=&lt;execute() running at demo.py:4&gt;&gt;</span><br><span class="line">Number: 1</span><br><span class="line">Task: &lt;Task finished coro=&lt;execute() done, defined at demo.py:4&gt; result=1&gt;</span><br><span class="line">After calling loop</span><br></pre></td></tr></table></figure>
+<p>我们使用 async 定义了一个 execute() 方法，方法接收一个数字参数，方法执行之后会打印这个数字。<br>随后我们直接调用了这个方法，然而这个方法并没有执行，而是返回了一个 coroutine 协程对象。</p>
+<p>随后我们使用 get_event_loop() 方法创建了一个事件循环 loop，并调用了 loop 对象的 run_until_complete() 方法将协程注册到事件循环 loop 中，然后启动。最后我们才看到了 execute() 方法打印了输出结果。可见，async 定义的方法就会变成一个无法直接执行的 coroutine 对象，必须将其注册到事件循环中才可以执行。</p>
+<p>我们也可以不使用task来运行，它里面相比 coroutine 对象多了运行状态，比如 running、finished 等，我们可以用这些状态来获取协程对象的执行情况。将 coroutine 对象传递给 run_until_complete() 方法的时候，实际上它进行了一个操作就是将 coroutine 封装成了 task 对象，如：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">import asyncio</span><br><span class="line"></span><br><span class="line">async def execute(x):</span><br><span class="line">    print(&apos;Number:&apos;, x)</span><br><span class="line"></span><br><span class="line">coroutine = execute(1)</span><br><span class="line">print(&apos;Coroutine:&apos;, coroutine)</span><br><span class="line">print(&apos;After calling execute&apos;)</span><br><span class="line"></span><br><span class="line">loop = asyncio.get_event_loop()</span><br><span class="line">loop.run_until_complete(coroutine)</span><br><span class="line">print(&apos;After calling loop&apos;)</span><br></pre></td></tr></table></figure>
+<p>查看了源码，正好可以验证上面这一观点：</p>
+<p>run_until_complete()这个方法位于源码中的base_events.py，函数有句注释：<br>Run until the Future is done.If the argument is a coroutine, it is wrapped in a Task.</p>
+<h3 id="二-发送网络请求结合aiohttp实现异步："><a href="#二-发送网络请求结合aiohttp实现异步：" class="headerlink" title="二 发送网络请求结合aiohttp实现异步："></a>二 发送网络请求结合aiohttp实现异步：</h3><p>我们用一个网络请求作为示例，这就是一个耗时等待的操作，因为我们请求网页之后需要等待页面响应并返回结果。耗时等待的操作一般都是 IO 操作，比如文件读取、网络请求等等。协程对于处理这种操作是有很大优势的，当遇到需要等待的情况的时候，程序可以暂时挂起，转而去执行其他的操作，从而避免一直等待一个程序而耗费过多的时间，充分利用资源。为了测试，我自己先通过flask 创建一个实验环境：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">from flask import Flask</span><br><span class="line">import time</span><br><span class="line">  </span><br><span class="line">app = Flask(__name__)</span><br><span class="line">  </span><br><span class="line">@app.route(&apos;/&apos;)</span><br><span class="line">def index():</span><br><span class="line">    time.sleep(3)</span><br><span class="line">    return &apos;Hello!&apos;</span><br><span class="line">  </span><br><span class="line">if __name__ == &apos;__main__&apos;:</span><br><span class="line">    app.run(threaded=True)</span><br></pre></td></tr></table></figure></p>
+<p>开始测试…<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">import asyncio</span><br><span class="line">import aiohttp</span><br><span class="line">import time</span><br><span class="line">  </span><br><span class="line">start = time.time()</span><br><span class="line">  </span><br><span class="line">async def get(url):</span><br><span class="line">    session = aiohttp.ClientSession()</span><br><span class="line">    response = await session.get(url)</span><br><span class="line">    result = await response.text()</span><br><span class="line">    session.close()</span><br><span class="line">    return result</span><br><span class="line">  </span><br><span class="line">async def request():</span><br><span class="line">    url = &apos;http://127.0.0.1:5000&apos;          # 访问flask搭建的服务器（睡眠3秒），模仿IO阻塞</span><br><span class="line">    print(&apos;Waiting for&apos;, url)</span><br><span class="line">    result = await get(url)</span><br><span class="line">    print(&apos;Get response from&apos;, url, &apos;Result:&apos;, result)</span><br><span class="line">  </span><br><span class="line">tasks = [asyncio.ensure_future(request()) for _ in range(5)]</span><br><span class="line">loop = asyncio.get_event_loop()</span><br><span class="line">loop.run_until_complete(asyncio.wait(tasks))</span><br><span class="line">  </span><br><span class="line">end = time.time()</span><br><span class="line">print(&apos;Cost time:&apos;, end - start)</span><br></pre></td></tr></table></figure></p>
+<p>运行结果…<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Waiting for http://127.0.0.1:5000</span><br><span class="line">Waiting for http://127.0.0.1:5000</span><br><span class="line">Waiting for http://127.0.0.1:5000</span><br><span class="line">Waiting for http://127.0.0.1:5000</span><br><span class="line">Waiting for http://127.0.0.1:5000</span><br><span class="line">Get response from http://127.0.0.1:5000 Result: Hello!</span><br><span class="line">Get response from http://127.0.0.1:5000 Result: Hello!</span><br><span class="line">Get response from http://127.0.0.1:5000 Result: Hello!</span><br><span class="line">Get response from http://127.0.0.1:5000 Result: Hello!</span><br><span class="line">Get response from http://127.0.0.1:5000 Result: Hello!</span><br><span class="line">Cost time: 3.0199508666992188</span><br></pre></td></tr></table></figure></p>
+<p>我们发现这次请求的耗时由 15 秒变成了 3 秒，耗时直接变成了原来的 1/5。</p>
+<p>代码里面我们使用了 await，后面跟了 get() 方法，在执行这五个协程的时候，如果遇到了 await，那么就会将当前协程挂起，转而去执行其他的协程，直到其他的协程也挂起或执行完毕，再进行下一个协程的执行。</p>
+<h2 id="二-总结"><a href="#二-总结" class="headerlink" title="二 总结"></a>二 总结</h2><p>协程”同时”运行多个任务的基础是函数可以暂停（await实际就是用到了yield）。上面的代码中使用到了 asyncio的 event_loop，它做的事情，本质上来说就是当函数暂停时，切换到下一个任务，当时机恰当（这个例子中是请求完成了）恢复函数让他继续运行（这有点像操作系统了）。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/python/" rel="tag"># python</a>
+          
+            <a href="/tags/异步/" rel="tag"># 异步</a>
+          
+            <a href="/tags/asyncio/" rel="tag"># asyncio</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2019/09/25/Go_mod/" rel="prev" title="使用go mod，告别GOPATH">
+                使用go mod，告别GOPATH <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/static/blogImg/ray.png" alt="Ray Wong">
+            
+              <p class="site-author-name" itemprop="name">Ray Wong</p>
+              <p class="site-description motion-element" itemprop="description">Peace & Love</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">22</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JIAWea" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.cnblogs.com/ray-h/" target="_blank" title="cnblog">
+                      
+                        <i class="fa fa-fw fa-globe"></i>cnblog</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://wpa.qq.com/msgrd?v=3&uin=1552937000&site=qq&menu=yes" target="_blank" title="QQ">
+                      
+                        <i class="fa fa-fw fa-globe"></i>QQ</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:rayhwong@126.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一-定义一个简单的协程："><span class="nav-number">1.</span> <span class="nav-text">一 定义一个简单的协程：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二-发送网络请求结合aiohttp实现异步："><span class="nav-number">2.</span> <span class="nav-text">二 发送网络请求结合aiohttp实现异步：</span></a></li></ol><li class="nav-item nav-level-2"><a class="nav-link" href="#二-总结"><span class="nav-number"></span> <span class="nav-text">二 总结</span></a></li></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ray</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

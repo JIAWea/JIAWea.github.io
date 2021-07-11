@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/static/blogImg/ray.png?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="etcd,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Ray's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="etcd 简单介绍etcd 是一个高可用的分布式 key-value 数据存储系统，内部采用 Raft 协议作为一致性算法，基于 Go 语言实现。 主要特点：  简单：提供明确的定义、面向用户的 API（gRPC） 安全：支持 TLS客户端证书认证 快速：基准测试每秒 10000 写入 可靠：使用 Raft 算法保证一致性">
+<meta name="keywords" content="etcd">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用 etcd 作为服务配置中心">
+<meta property="og:url" content="https://jiawea.github.io/2020/12/12/Etcd/index.html">
+<meta property="og:site_name" content="Ray&#39;s blog">
+<meta property="og:description" content="etcd 简单介绍etcd 是一个高可用的分布式 key-value 数据存储系统，内部采用 Raft 协议作为一致性算法，基于 Go 语言实现。 主要特点：  简单：提供明确的定义、面向用户的 API（gRPC） 安全：支持 TLS客户端证书认证 快速：基准测试每秒 10000 写入 可靠：使用 Raft 算法保证一致性">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://jiawea.github.io/static/etcd/01.png">
+<meta property="og:updated_time" content="2020-12-12T06:26:01.955Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用 etcd 作为服务配置中心">
+<meta name="twitter:description" content="etcd 简单介绍etcd 是一个高可用的分布式 key-value 数据存储系统，内部采用 Raft 协议作为一致性算法，基于 Go 语言实现。 主要特点：  简单：提供明确的定义、面向用户的 API（gRPC） 安全：支持 TLS客户端证书认证 快速：基准测试每秒 10000 写入 可靠：使用 Raft 算法保证一致性">
+<meta name="twitter:image" content="https://jiawea.github.io/static/etcd/01.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://jiawea.github.io/2020/12/12/Etcd/">
+
+
+
+
+
+  <title>使用 etcd 作为服务配置中心 | Ray's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Ray's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Coding...</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://jiawea.github.io/2020/12/12/Etcd/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ray Wong">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/static/blogImg/ray.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ray's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">使用 etcd 作为服务配置中心</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-12-12T09:30:18+08:00">
+                2020-12-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/微服务/" itemprop="url" rel="index">
+                    <span itemprop="name">微服务</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="etcd-简单介绍"><a href="#etcd-简单介绍" class="headerlink" title="etcd 简单介绍"></a>etcd 简单介绍</h3><p>etcd 是一个高可用的分布式 key-value 数据存储系统，内部采用 <code>Raft</code> 协议作为一致性算法，基于 Go 语言实现。</p>
+<p>主要特点：</p>
+<ul>
+<li>简单：提供明确的定义、面向用户的 API（gRPC）</li>
+<li>安全：支持 TLS客户端证书认证</li>
+<li>快速：基准测试每秒 10000 写入</li>
+<li>可靠：使用 Raft 算法保证一致性</li>
+</ul>
+<a id="more"></a>
+<h3 id="etcd-应用场景"><a href="#etcd-应用场景" class="headerlink" title="etcd 应用场景"></a>etcd 应用场景</h3><h4 id="服务发现"><a href="#服务发现" class="headerlink" title="服务发现"></a>服务发现</h4><p>服务发现要解决的也是分布式系统中最常见的问题之一，即在同一个分布式集群中的进程或服务，要如何才能找到对方并建立连接。本质上来说，服务发现就是想要了解集群中是否有进程在监听 <code>udp</code> 或 <code>tcp</code> 端口，并且通过名字就可以查找和连接。</p>
+<center><img src="/static/etcd/01.png" alt="服务发现"></center>
+
+<h4 id="配置中心"><a href="#配置中心" class="headerlink" title="配置中心"></a>配置中心</h4><p>将配置进行集中管理。一般应用在启动时会主动从 etcd 中获取配置信息，同时在节点上注册一个 <code>Watcher</code> 监控，每当配置有更新时，etcd 都会实时通知订阅者，以此获取最新的配置。</p>
+<h4 id="分布式锁"><a href="#分布式锁" class="headerlink" title="分布式锁"></a>分布式锁</h4><p>使用 <code>Raft</code> 算法保持数据的一致性，每当数据储存到集群中的值必然是全局一致的，所以很容易实现分布式锁。所有获取锁的用户最终只有一个可以得到，为此提供了分布式锁原子操作 CAS（CompareAndSwap）的 API。通过设置prevExist值，可以保证在多个节点同时去创建某个目录时，只有一个成功。而创建成功的用户就可以认为是获得了锁。</p>
+<h3 id="Raft-简单介绍"><a href="#Raft-简单介绍" class="headerlink" title="Raft 简单介绍"></a>Raft 简单介绍</h3><p><code>Raft</code> 是一种协议，集群节点可以使用该协议维护一个复制的状态机，状态机与复制的日志保存同步。具体详情可看<a href="https://Raft.github.io/Raft.pdf" target="_blank" rel="noopener">Raft.pdf</a>。<code>Raft</code> 被广泛地使用在许多产品中，其中包括 etcd, Kubernetes, Docker Swarm, Cloud Foundry Diego, CockroachDB, TiDB, Project Calico, Flannel, Hyperledger 等。</p>
+<p>相关特性：</p>
+<ul>
+<li>领导人选举</li>
+<li>日志复制</li>
+<li>日志压缩</li>
+<li>会员变更</li>
+<li>领导转移扩展</li>
+<li>····</li>
+</ul>
+<h3 id="etcd-与其他常见服务发现框架对比"><a href="#etcd-与其他常见服务发现框架对比" class="headerlink" title="etcd 与其他常见服务发现框架对比"></a>etcd 与其他常见服务发现框架对比</h3><table>
+<thead>
+<tr>
+<th style="text-align:center">名称</th>
+<th>优点</th>
+<th>缺点</th>
+<th style="text-align:center">接口</th>
+<th style="text-align:center">一致性算法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">zookeeper</td>
+<td>1.功能强大，不仅仅只是服务发现<br>2.提供 watcher 机制能实时获取服务提供者的状态<br>3.dubbo 等框架支持</td>
+<td>1.没有健康检查<br>2.需在服务中集成 sdk，复杂度高<br>3.不支持多数据中心</td>
+<td style="text-align:center">sdk</td>
+<td style="text-align:center">Paxos</td>
+</tr>
+<tr>
+<td style="text-align:center">consul</td>
+<td>1.简单易用，不需要集成 sdk<br>2.自带健康检查<br>3.支持多数据中心<br>4.提供 web 管理界面<br></td>
+<td>不能实时获取服务信息的变化通知</td>
+<td style="text-align:center">http/dns</td>
+<td style="text-align:center">Raft</td>
+</tr>
+<tr>
+<td style="text-align:center">etcd</td>
+<td>1.简单易用，不需要集成 sdk<br>可配置性强<br></td>
+<td>1.没有健康检查<br>2.需配合第三方工具一起完成服务发现<br>3.不支持多数据中心</td>
+<td style="text-align:center">http</td>
+<td style="text-align:center">Raft</td>
+</tr>
+</tbody>
+</table>
+<h3 id="etcd-单机部署"><a href="#etcd-单机部署" class="headerlink" title="etcd 单机部署"></a>etcd 单机部署</h3><p>部署环境：Ubuntu-16.04</p>
+<h4 id="etcd-Server-端"><a href="#etcd-Server-端" class="headerlink" title="etcd Server 端"></a>etcd Server 端</h4><p>下载：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">ETCD_VER=v3.4.14</span><br><span class="line"></span><br><span class="line"># choose either URL</span><br><span class="line">GOOGLE_URL=https://storage.googleapis.com/etcd</span><br><span class="line">GITHUB_URL=https://github.com/etcd-io/etcd/releases/download</span><br><span class="line">DOWNLOAD_URL=$&#123;GOOGLE_URL&#125;</span><br><span class="line"></span><br><span class="line">rm -f /tmp/etcd-$&#123;ETCD_VER&#125;-linux-amd64.tar.gz</span><br><span class="line">rm -rf /tmp/etcd-download-test &amp;&amp; mkdir -p /tmp/etcd-download-test</span><br><span class="line"></span><br><span class="line">curl -L $&#123;DOWNLOAD_URL&#125;/$&#123;ETCD_VER&#125;/etcd-$&#123;ETCD_VER&#125;-linux-amd64.tar.gz -o /tmp/etcd-$&#123;ETCD_VER&#125;-linux-amd64.tar.gz</span><br><span class="line">tar xzvf /tmp/etcd-$&#123;ETCD_VER&#125;-linux-amd64.tar.gz -C /tmp/etcd-download-test --strip-components=1</span><br><span class="line">rm -f /tmp/etcd-$&#123;ETCD_VER&#125;-linux-amd64.tar.gz</span><br><span class="line"></span><br><span class="line">/tmp/etcd-download-test/etcd --version</span><br><span class="line">/tmp/etcd-download-test/etcdctl version</span><br></pre></td></tr></table></figure></p>
+<p>启动：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># start a local etcd server</span><br><span class="line">/tmp/etcd-download-test/etcd</span><br></pre></td></tr></table></figure></p>
+<p>启动信息：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">[WARNING] Deprecated &apos;--logger=capnslog&apos; flag is set; use &apos;--logger=zap&apos; flag instead</span><br><span class="line">2020-12-10 17:07:49.921382 I | etcdmain: etcd Version: 3.4.14</span><br><span class="line">2020-12-10 17:07:49.924906 I | etcdmain: Git SHA: 8a03d2e96</span><br><span class="line">2020-12-10 17:07:49.925297 I | etcdmain: Go Version: go1.12.17</span><br><span class="line">2020-12-10 17:07:49.927355 I | etcdmain: Go OS/Arch: linux/amd64</span><br><span class="line">2020-12-10 17:07:49.928312 I | etcdmain: setting maximum number of CPUs to 2, total number of available CPUs is 2</span><br><span class="line">2020-12-10 17:07:49.928478 W | etcdmain: no data-dir provided, using default data-dir ./default.etcd</span><br><span class="line">[WARNING] Deprecated &apos;--logger=capnslog&apos; flag is set; use &apos;--logger=zap&apos; flag instead</span><br><span class="line">2020-12-10 17:07:49.930599 I | embed: name = default</span><br><span class="line">2020-12-10 17:07:49.930678 I | embed: data dir = default.etcd</span><br><span class="line">2020-12-10 17:07:49.930739 I | embed: member dir = default.etcd/member</span><br><span class="line">2020-12-10 17:07:49.930810 I | embed: heartbeat = 100ms</span><br><span class="line">2020-12-10 17:07:49.930885 I | embed: election = 1000ms</span><br><span class="line">2020-12-10 17:07:49.930953 I | embed: snapshot count = 100000</span><br><span class="line">2020-12-10 17:07:49.931005 I | embed: advertise client URLs = http://localhost:2379</span><br><span class="line">2020-12-10 17:07:49.974825 I | etcdserver: starting member 8e9e05c52164694d in cluster cdf818194e3a8c32</span><br><span class="line">Raft2020/12/10 17:07:49 INFO: 8e9e05c52164694d switched to configuration voters=()</span><br><span class="line">Raft2020/12/10 17:07:49 INFO: 8e9e05c52164694d became follower at term 0</span><br><span class="line">Raft2020/12/10 17:07:49 INFO: newRaft 8e9e05c52164694d [peers: [], term: 0, commit: 0, applied: 0, lastindex: 0, lastterm: 0]</span><br><span class="line">Raft2020/12/10 17:07:49 INFO: 8e9e05c52164694d became follower at term 1</span><br><span class="line">Raft2020/12/10 17:07:49 INFO: 8e9e05c52164694d switched to configuration voters=(10276657743932975437)</span><br><span class="line">2020-12-10 17:07:49.997394 W | auth: simple token is not cryptographically signed</span><br><span class="line">2020-12-10 17:07:50.011174 I | etcdserver: starting server... [version: 3.4.14, cluster version: to_be_decided]</span><br><span class="line">2020-12-10 17:07:50.014616 I | etcdserver: 8e9e05c52164694d as single-node; fast-forwarding 9 ticks (election ticks 10)</span><br><span class="line">Raft2020/12/10 17:07:50 INFO: 8e9e05c52164694d switched to configuration voters=(10276657743932975437)</span><br><span class="line">2020-12-10 17:07:50.018429 I | etcdserver/membership: added member 8e9e05c52164694d [http://localhost:2380] to cluster cdf818194e3a8c32</span><br><span class="line">2020-12-10 17:07:50.020840 I | embed: listening for peers on 127.0.0.1:2380</span><br><span class="line">Raft2020/12/10 17:07:50 INFO: 8e9e05c52164694d is starting a new election at term 1</span><br><span class="line">Raft2020/12/10 17:07:50 INFO: 8e9e05c52164694d became candidate at term 2</span><br><span class="line">Raft2020/12/10 17:07:50 INFO: 8e9e05c52164694d received MsgVoteResp from 8e9e05c52164694d at term 2</span><br><span class="line">Raft2020/12/10 17:07:50 INFO: 8e9e05c52164694d became leader at term 2</span><br><span class="line">Raft2020/12/10 17:07:50 INFO: Raft.node: 8e9e05c52164694d elected leader 8e9e05c52164694d at term 2</span><br><span class="line">2020-12-10 17:07:50.788838 I | etcdserver: setting up the initial cluster version to 3.4</span><br><span class="line">2020-12-10 17:07:50.794910 N | etcdserver/membership: set the initial cluster version to 3.4</span><br><span class="line">2020-12-10 17:07:50.795922 I | etcdserver/api: enabled capabilities for version 3.4</span><br><span class="line">2020-12-10 17:07:50.796055 I | etcdserver: published &#123;Name:default ClientURLs:[http://localhost:2379]&#125; to cluster cdf818194e3a8c32</span><br><span class="line">2020-12-10 17:07:50.797360 I | embed: ready to serve client requests</span><br><span class="line">2020-12-10 17:07:50.803625 N | embed: serving insecure client requests on 127.0.0.1:2379, this is strongly discouraged!</span><br></pre></td></tr></table></figure></p>
+<p>相关信息：</p>
+<ul>
+<li>name 表示节点名称，默认为 default。</li>
+<li>data-dir 保存日志和快照的目录，默认为当前工作目录default.etcd/目录下。</li>
+<li>在 <a href="http://localhost:2380" target="_blank" rel="noopener">http://localhost:2380</a> 和集群中其他节点通信。</li>
+<li>在 <a href="http://localhost:2379" target="_blank" rel="noopener">http://localhost:2379</a> 提供 HTTP API 服务，供客户端交互。</li>
+<li>heartbeat 为 100ms，该参数的作用是 leader 多久发送一次心跳到</li>
+<li>followers，默认值是100ms。</li>
+<li>election 为 1000ms，该参数的作用是重新投票的超时时间，如果 follow 在该 + 时间间隔没有收到心跳包，会触发重新投票，默认为 1000ms。</li>
+<li>snapshot count 为 10000，该参数的作用是指定有多少事务被提交时，触发 + 截取快照保存到磁盘。</li>
+<li>集群和每个节点都会生成一个 uuid。</li>
+<li>启动的时候会运行 Raft，选举出 leader。</li>
+</ul>
+<h4 id="etcd-Client-端"><a href="#etcd-Client-端" class="headerlink" title="etcd Client 端"></a>etcd Client 端</h4><h5 id="命令行客户端"><a href="#命令行客户端" class="headerlink" title="命令行客户端"></a>命令行客户端</h5><p>etcd 提供一个命令行客户端，这里简单看一下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># write,read to etcd</span><br><span class="line">/tmp/etcd-download-test/etcdctl --endpoints=localhost:2379 put foo bar</span><br><span class="line">/tmp/etcd-download-test/etcdctl --endpoints=localhost:2379 get foo</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line">ray@ray-virtual-machine:~$ /tmp/etcd-download-test/etcdctl -h</span><br><span class="line">NAME:</span><br><span class="line">        etcdctl - A simple command line client for etcd3.</span><br><span class="line"></span><br><span class="line">USAGE:</span><br><span class="line">        etcdctl [flags]</span><br><span class="line"></span><br><span class="line">VERSION:</span><br><span class="line">        3.4.14</span><br><span class="line"></span><br><span class="line">API VERSION:</span><br><span class="line">        3.4</span><br><span class="line"></span><br><span class="line">COMMANDS:</span><br><span class="line">        alarm disarm            Disarms all alarms</span><br><span class="line">        alarm list              Lists all alarms</span><br><span class="line">        auth disable            Disables authentication</span><br><span class="line">        auth enable             Enables authentication</span><br><span class="line">        check datascale         Check the memory usage of holding data for different workloads on a given server endpoint.</span><br><span class="line">        check perf              Check the performance of the etcd cluster</span><br><span class="line">        compaction              Compacts the event history in etcd</span><br><span class="line">        defrag                  Defragments the storage of the etcd members with given endpoints</span><br><span class="line">        del                     Removes the specified key or range of keys [key, range_end)</span><br><span class="line">        elect                   Observes and participates in leader election</span><br><span class="line">        endpoint hashkv         Prints the KV history hash for each endpoint in --endpoints</span><br><span class="line">        endpoint health         Checks the healthiness of endpoints specified in `--endpoints` flag</span><br><span class="line">        endpoint status         Prints out the status of endpoints specified in `--endpoints` flag</span><br><span class="line">        get                     Gets the key or a range of keys</span><br><span class="line">        help                    Help about any command</span><br><span class="line">        lease grant             Creates leases</span><br><span class="line">        lease keep-alive        Keeps leases alive (renew)</span><br><span class="line">        lease list              List all active leases</span><br><span class="line">        lease revoke            Revokes leases</span><br><span class="line">        lease timetolive        Get lease information</span><br><span class="line">        lock                    Acquires a named lock</span><br><span class="line">        make-mirror             Makes a mirror at the destination etcd cluster</span><br><span class="line">        member add              Adds a member into the cluster</span><br><span class="line">        member list             Lists all members in the cluster</span><br><span class="line">        member promote          Promotes a non-voting member in the cluster</span><br><span class="line">        member remove           Removes a member from the cluster</span><br><span class="line">        member update           Updates a member in the cluster</span><br><span class="line">        migrate                 Migrates keys in a v2 store to a mvcc store</span><br><span class="line">        move-leader             Transfers leadership to another etcd cluster member.</span><br><span class="line">        put                     Puts the given key into the store</span><br><span class="line">        role add                Adds a new role</span><br><span class="line">        role delete             Deletes a role</span><br><span class="line">        role get                Gets detailed information of a role</span><br><span class="line">        role grant-permission   Grants a key to a role</span><br><span class="line">        role list               Lists all roles</span><br><span class="line">        role revoke-permission  Revokes a key from a role</span><br><span class="line">        snapshot restore        Restores an etcd member snapshot to an etcd directory</span><br><span class="line">        snapshot save           Stores an etcd node backend snapshot to a given file</span><br><span class="line">        snapshot status         Gets backend snapshot status of a given file</span><br><span class="line">        txn                     Txn processes all the requests in one transaction</span><br><span class="line">        user add                Adds a new user</span><br><span class="line">        user delete             Deletes a user</span><br><span class="line">        user get                Gets detailed information of a user</span><br><span class="line">        user grant-role         Grants a role to a user</span><br><span class="line">        user list               Lists all users</span><br><span class="line">        user passwd             Changes password of user</span><br><span class="line">        user revoke-role        Revokes a role from a user</span><br><span class="line">        version                 Prints the version of etcdctl</span><br><span class="line">        watch                   Watches events stream on keys or prefixes</span><br><span class="line"></span><br><span class="line">OPTIONS:</span><br><span class="line">      --cacert=&quot;&quot;                               verify certificates of TLS-enabled secure servers using this CA bundle</span><br><span class="line">      --cert=&quot;&quot;                                 identify secure client using this TLS certificate file</span><br><span class="line">      --command-timeout=5s                      timeout for short running command (excluding dial timeout)</span><br><span class="line">      --debug[=false]                           enable client-side debug logging</span><br><span class="line">      --dial-timeout=2s                         dial timeout for client connections</span><br><span class="line">  -d, --discovery-srv=&quot;&quot;                        domain name to query for SRV records describing cluster endpoints</span><br><span class="line">      --discovery-srv-name=&quot;&quot;                   service name to query when using DNS discovery</span><br><span class="line">      --endpoints=[127.0.0.1:2379]              gRPC endpoints</span><br><span class="line">  -h, --help[=false]                            help for etcdctl</span><br><span class="line">      --hex[=false]                             print byte strings as hex encoded strings</span><br><span class="line">      --insecure-discovery[=true]               accept insecure SRV records describing cluster endpoints</span><br><span class="line">      --insecure-skip-tls-verify[=false]        skip server certificate verification (CAUTION: this option should be enabled only for testing purposes)</span><br><span class="line">      --insecure-transport[=true]               disable transport security for client connections</span><br><span class="line">      --keepalive-time=2s                       keepalive time for client connections</span><br><span class="line">      --keepalive-timeout=6s                    keepalive timeout for client connections</span><br><span class="line">      --key=&quot;&quot;                                  identify secure client using this TLS key file</span><br><span class="line">      --password=&quot;&quot;                             password for authentication (if this option is used, --user option shouldn&apos;t include password)</span><br><span class="line">      --user=&quot;&quot;                                 username[:password] for authentication (prompt if password is not supplied)</span><br><span class="line">  -w, --write-out=&quot;simple&quot;                      set the output format (fields, json, protobuf, simple, table)</span><br></pre></td></tr></table></figure>
+<h5 id="客户端包"><a href="#客户端包" class="headerlink" title="客户端包"></a>客户端包</h5><blockquote>
+<p>安装</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">go get go.etcd.io/etcd/clientv3</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>put、get</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line">import (</span><br><span class="line">	&quot;context&quot;</span><br><span class="line">	&quot;fmt&quot;</span><br><span class="line">	&quot;time&quot;</span><br><span class="line"></span><br><span class="line">	&quot;go.etcd.io/etcd/clientv3&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">// etcd client put/get demo</span><br><span class="line">// use etcd/clientv3</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line">	cli, err := clientv3.New(clientv3.Config&#123;</span><br><span class="line">		Endpoints:   []string&#123;&quot;127.0.0.1:2379&quot;&#125;,</span><br><span class="line">		DialTimeout: 5 * time.Second,</span><br><span class="line">	&#125;)</span><br><span class="line">	if err != nil &#123;</span><br><span class="line">		// handle error!</span><br><span class="line">		fmt.Printf(&quot;connect to etcd failed, err:%v\n&quot;, err)</span><br><span class="line">		return</span><br><span class="line">	&#125;</span><br><span class="line">    fmt.Println(&quot;connect to etcd success&quot;)</span><br><span class="line">	defer cli.Close()</span><br><span class="line">	// put</span><br><span class="line">	ctx, cancel := context.WithTimeout(context.Background(), time.Second)</span><br><span class="line">	_, err = cli.Put(ctx, &quot;q1mi&quot;, &quot;dsb&quot;)</span><br><span class="line">	cancel()</span><br><span class="line">	if err != nil &#123;</span><br><span class="line">		fmt.Printf(&quot;put to etcd failed, err:%v\n&quot;, err)</span><br><span class="line">		return</span><br><span class="line">	&#125;</span><br><span class="line">	// get</span><br><span class="line">	ctx, cancel = context.WithTimeout(context.Background(), time.Second)</span><br><span class="line">	resp, err := cli.Get(ctx, &quot;q1mi&quot;)</span><br><span class="line">	cancel()</span><br><span class="line">	if err != nil &#123;</span><br><span class="line">		fmt.Printf(&quot;get from etcd failed, err:%v\n&quot;, err)</span><br><span class="line">		return</span><br><span class="line">	&#125;</span><br><span class="line">	for _, ev := range resp.Kvs &#123;</span><br><span class="line">		fmt.Printf(&quot;%s:%s\n&quot;, ev.Key, ev.Value)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>watch</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line">import (</span><br><span class="line">	&quot;context&quot;</span><br><span class="line">	&quot;fmt&quot;</span><br><span class="line">	&quot;time&quot;</span><br><span class="line"></span><br><span class="line">	&quot;go.etcd.io/etcd/clientv3&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">// watch demo</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line">	cli, err := clientv3.New(clientv3.Config&#123;</span><br><span class="line">		Endpoints:   []string&#123;&quot;127.0.0.1:2379&quot;&#125;,</span><br><span class="line">		DialTimeout: 5 * time.Second,</span><br><span class="line">	&#125;)</span><br><span class="line">	if err != nil &#123;</span><br><span class="line">		fmt.Printf(&quot;connect to etcd failed, err:%v\n&quot;, err)</span><br><span class="line">		return</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(&quot;connect to etcd success&quot;)</span><br><span class="line">	defer cli.Close()</span><br><span class="line">	// watch key:q1mi change</span><br><span class="line">	rch := cli.Watch(context.Background(), &quot;q1mi&quot;) // &lt;-chan WatchResponse</span><br><span class="line">	for wresp := range rch &#123;</span><br><span class="line">		for _, ev := range wresp.Events &#123;</span><br><span class="line">			fmt.Printf(&quot;Type: %s Key:%s Value:%s\n&quot;, ev.Type, ev.Kv.Key, ev.Kv.Value)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>lease 租约</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line">// etcd lease</span><br><span class="line"></span><br><span class="line">import (</span><br><span class="line">	&quot;fmt&quot;</span><br><span class="line">	&quot;time&quot;</span><br><span class="line">	&quot;context&quot;</span><br><span class="line">	&quot;log&quot;</span><br><span class="line"></span><br><span class="line">	&quot;go.etcd.io/etcd/clientv3&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line">	cli, err := clientv3.New(clientv3.Config&#123;</span><br><span class="line">		Endpoints:   []string&#123;&quot;127.0.0.1:2379&quot;&#125;,</span><br><span class="line">		DialTimeout: time.Second * 5,</span><br><span class="line">	&#125;)</span><br><span class="line">	if err != nil &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(&quot;connect to etcd success.&quot;)</span><br><span class="line">	defer cli.Close()</span><br><span class="line"></span><br><span class="line">	// 创建一个5秒的租约</span><br><span class="line">	resp, err := cli.Grant(context.TODO(), 5)</span><br><span class="line">	if err != nil &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	// 5秒钟之后, /nazha/ 这个key就会被移除</span><br><span class="line">	_, err = cli.Put(context.TODO(), &quot;/nazha/&quot;, &quot;dsb&quot;, clientv3.WithLease(resp.ID))</span><br><span class="line">	if err != nil &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>keepAlive</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line">import (</span><br><span class="line">	&quot;context&quot;</span><br><span class="line">	&quot;fmt&quot;</span><br><span class="line">	&quot;log&quot;</span><br><span class="line">	&quot;time&quot;</span><br><span class="line"></span><br><span class="line">	&quot;go.etcd.io/etcd/clientv3&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">// etcd keepAlive</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line">	cli, err := clientv3.New(clientv3.Config&#123;</span><br><span class="line">		Endpoints:   []string&#123;&quot;127.0.0.1:2379&quot;&#125;,</span><br><span class="line">		DialTimeout: time.Second * 5,</span><br><span class="line">	&#125;)</span><br><span class="line">	if err != nil &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(&quot;connect to etcd success.&quot;)</span><br><span class="line">	defer cli.Close()</span><br><span class="line"></span><br><span class="line">	resp, err := cli.Grant(context.TODO(), 5)</span><br><span class="line">	if err != nil &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	_, err = cli.Put(context.TODO(), &quot;/nazha/&quot;, &quot;dsb&quot;, clientv3.WithLease(resp.ID))</span><br><span class="line">	if err != nil &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	// the key &apos;foo&apos; will be kept forever</span><br><span class="line">	ch, kaerr := cli.KeepAlive(context.TODO(), resp.ID)</span><br><span class="line">	if kaerr != nil &#123;</span><br><span class="line">		log.Fatal(kaerr)</span><br><span class="line">	&#125;</span><br><span class="line">	for &#123;</span><br><span class="line">		ka := &lt;-ch</span><br><span class="line">		fmt.Println(&quot;ttl:&quot;, ka.TTL)</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>分布式锁</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">package main</span><br><span class="line"></span><br><span class="line">import (</span><br><span class="line">	&quot;fmt&quot;</span><br><span class="line">	&quot;log&quot;</span><br><span class="line">	&quot;go.etcd.io/etcd/clientv3/concurrency&quot;</span><br><span class="line">)</span><br><span class="line"></span><br><span class="line">func main() &#123;</span><br><span class="line">	cli, err := clientv3.New(clientv3.Config&#123;Endpoints: endpoints&#125;)</span><br><span class="line">	if err != nil &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	defer cli.Close()</span><br><span class="line"></span><br><span class="line">	// 创建两个单独的会话用来演示锁竞争</span><br><span class="line">	s1, err := concurrency.NewSession(cli)</span><br><span class="line">	if err != nil &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	defer s1.Close()</span><br><span class="line">	m1 := concurrency.NewMutex(s1, &quot;/my-lock/&quot;)</span><br><span class="line"></span><br><span class="line">	s2, err := concurrency.NewSession(cli)</span><br><span class="line">	if err != nil &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	defer s2.Close()</span><br><span class="line">	m2 := concurrency.NewMutex(s2, &quot;/my-lock/&quot;)</span><br><span class="line"></span><br><span class="line">	// 会话s1获取锁</span><br><span class="line">	if err := m1.Lock(context.TODO()); err != nil &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(&quot;acquired lock for s1&quot;)</span><br><span class="line"></span><br><span class="line">	m2Locked := make(chan struct&#123;&#125;)</span><br><span class="line">	go func() &#123;</span><br><span class="line">		defer close(m2Locked)</span><br><span class="line">		// 等待直到会话s1释放了/my-lock/的锁</span><br><span class="line">		if err := m2.Lock(context.TODO()); err != nil &#123;</span><br><span class="line">			log.Fatal(err)</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;()</span><br><span class="line"></span><br><span class="line">	if err := m1.Unlock(context.TODO()); err != nil &#123;</span><br><span class="line">		log.Fatal(err)</span><br><span class="line">	&#125;</span><br><span class="line">	fmt.Println(&quot;released lock for s1&quot;)</span><br><span class="line"></span><br><span class="line">	&lt;-m2Locked</span><br><span class="line">	fmt.Println(&quot;acquired lock for s2&quot;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出:<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">acquired lock for s1</span><br><span class="line">released lock for s1</span><br><span class="line">acquired lock for s2</span><br></pre></td></tr></table></figure></p>
+<blockquote>
+<p>参考文献</p>
+<ul>
+<li><a href="https://etcd.io/docs/v3.4.0/demo/" target="_blank" rel="noopener">https://etcd.io/docs/v3.4.0/demo/</a></li>
+<li><a href="https://github.com/etcd-io/etcd/releases" target="_blank" rel="noopener">https://github.com/etcd-io/etcd/releases</a></li>
+</ul>
+</blockquote>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/etcd/" rel="tag"># etcd</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2020/11/22/Go_map/" rel="next" title="Golang map实现原理">
+                <i class="fa fa-chevron-left"></i> Golang map实现原理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/06/06/Py_pyenv/" rel="prev" title="Python版本管理">
+                Python版本管理 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/static/blogImg/ray.png" alt="Ray Wong">
+            
+              <p class="site-author-name" itemprop="name">Ray Wong</p>
+              <p class="site-description motion-element" itemprop="description">Peace & Love</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">22</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">30</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JIAWea" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.cnblogs.com/ray-h/" target="_blank" title="cnblog">
+                      
+                        <i class="fa fa-fw fa-globe"></i>cnblog</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://wpa.qq.com/msgrd?v=3&uin=1552937000&site=qq&menu=yes" target="_blank" title="QQ">
+                      
+                        <i class="fa fa-fw fa-globe"></i>QQ</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:rayhwong@126.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#etcd-简单介绍"><span class="nav-number">1.</span> <span class="nav-text">etcd 简单介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#etcd-应用场景"><span class="nav-number">2.</span> <span class="nav-text">etcd 应用场景</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#服务发现"><span class="nav-number">2.1.</span> <span class="nav-text">服务发现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#配置中心"><span class="nav-number">2.2.</span> <span class="nav-text">配置中心</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#分布式锁"><span class="nav-number">2.3.</span> <span class="nav-text">分布式锁</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Raft-简单介绍"><span class="nav-number">3.</span> <span class="nav-text">Raft 简单介绍</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#etcd-与其他常见服务发现框架对比"><span class="nav-number">4.</span> <span class="nav-text">etcd 与其他常见服务发现框架对比</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#etcd-单机部署"><span class="nav-number">5.</span> <span class="nav-text">etcd 单机部署</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#etcd-Server-端"><span class="nav-number">5.1.</span> <span class="nav-text">etcd Server 端</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#etcd-Client-端"><span class="nav-number">5.2.</span> <span class="nav-text">etcd Client 端</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#命令行客户端"><span class="nav-number">5.2.1.</span> <span class="nav-text">命令行客户端</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#客户端包"><span class="nav-number">5.2.2.</span> <span class="nav-text">客户端包</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ray</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
