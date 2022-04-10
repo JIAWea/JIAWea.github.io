@@ -99,7 +99,7 @@
 <meta property="og:image" content="https://jiawea.github.io/static/network/baowen.png">
 <meta property="og:image" content="https://jiawea.github.io/static/network/3.png">
 <meta property="og:image" content="https://jiawea.github.io/static/network/4.png">
-<meta property="og:updated_time" content="2020-11-21T02:47:20.544Z">
+<meta property="og:updated_time" content="2020-12-04T07:10:48.099Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="TCP&#x2F;IP协议">
 <meta name="twitter:description" content="最近重新学习了计算机网络原理这一门课，趁着这机会，也对TCP/IP做一下总结吧。 一、 计算机网络体系结构分层  OSI模型和TCP/IP模型上有一些区别，每一层都是处理自己的事情，然后交给下一层处理。">
@@ -446,6 +446,17 @@
 
 <h4 id="8-TCP四次挥手"><a href="#8-TCP四次挥手" class="headerlink" title="8.TCP四次挥手"></a>8.TCP四次挥手</h4><center><img src="/static/network/4.png" alt="avatar"></center>
 
+<h4 id="9-总结"><a href="#9-总结" class="headerlink" title="9.总结"></a>9.总结</h4><p>对于复杂的网络，<code>TCP</code>的实现提出了很多应对措施，其中包括为什么要三次握手和四次挥手，以及<code>TIME_WAIT</code>状态有什么作用。</p>
+<h5 id="为什么要三次握手，不是两次"><a href="#为什么要三次握手，不是两次" class="headerlink" title="为什么要三次握手，不是两次"></a>为什么要三次握手，不是两次</h5><ul>
+<li>为了实现可靠数据传输，通讯双方必须都维护一个序列号，用来标识发送出去的数据包中哪些被对方接收。三次握手的过程即是通讯双方相互告知序列号的起始值，并确认对方已经收到了序列号起始值。</li>
+<li>如果只有两次握手的话，最多只有客户端的起始序号被确认，而服务端的序列号得不到确认。</li>
+</ul>
+<h5 id="四次挥手-TIME-WAIT"><a href="#四次挥手-TIME-WAIT" class="headerlink" title="四次挥手 TIME_WAIT"></a>四次挥手 TIME_WAIT</h5><p>从图中我们可以看到当客户端断开连接后最后会进入<code>TIME_WAIT</code>状态，那么保持这个状态有什么作用呢？</p>
+<ul>
+<li>在四次挥手中，客户端发送<code>FIN</code>，服务端接收后返回<code>ACK</code>确认，在确认所有数据发送完毕后会，再次发送<code>FIN</code>给客户端，客户端响应发送<code>ACK</code>并进入<code>TIME_WAIT</code>状态，等待2MSL最大分段寿命（MSL, Maximum Segment Lifetime）后关闭连接。<br>如果没有<code>TIME_WAIT</code>状态，客户端响应的<code>ACK</code>包丢失的话，服务端就会重发<code>FIN</code>包，当客户端接收到一个没有经过<code>TCP</code>连接的包时，会响应一个<code>RST</code>重置包，导致服务端异常。所以<code>TIME_WAIT</code>是为了保证<code>TCP</code>的正常关闭。</li>
+<li>我们还知道，<code>TCP</code>报文传输过程中有可能不是顺序到达的，如果连接已经关闭了，此时客户端接收到了由于网络原因导致没有及时接收到服务端发送的数据包，客户端就会重新建立一个连接。所以<code>TIME_WAIT</code>的存在也是为了保证网络中迷失的数据包正常过期。</li>
+</ul>
+
       
     </div>
     
@@ -566,7 +577,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">19</span>
+                  <span class="site-state-item-count">23</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -577,7 +588,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-count">7</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -588,7 +599,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">25</span>
+                  <span class="site-state-item-count">31</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -656,7 +667,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、-计算机网络体系结构分层"><span class="nav-number">1.</span> <span class="nav-text">一、 计算机网络体系结构分层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、-TCP-IP协议"><span class="nav-number">2.</span> <span class="nav-text">二、 TCP/IP协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、-分层"><span class="nav-number">3.</span> <span class="nav-text">三、 分层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、-应用层"><span class="nav-number">4.</span> <span class="nav-text">四、 应用层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#五、-传输层"><span class="nav-number">5.</span> <span class="nav-text">五、 传输层</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-端口号"><span class="nav-number">5.1.</span> <span class="nav-text">1.端口号</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-端口号的确认"><span class="nav-number">5.2.</span> <span class="nav-text">2.端口号的确认</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-UDP"><span class="nav-number">5.3.</span> <span class="nav-text">3.UDP</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-TCP"><span class="nav-number">5.4.</span> <span class="nav-text">4.TCP</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-复用与分解"><span class="nav-number">5.5.</span> <span class="nav-text">5.复用与分解</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-TCP报文结构"><span class="nav-number">5.6.</span> <span class="nav-text">6.TCP报文结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#7-TCP三次握手"><span class="nav-number">5.7.</span> <span class="nav-text">7.TCP三次握手</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#8-TCP四次挥手"><span class="nav-number">5.8.</span> <span class="nav-text">8.TCP四次挥手</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#一、-计算机网络体系结构分层"><span class="nav-number">1.</span> <span class="nav-text">一、 计算机网络体系结构分层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#二、-TCP-IP协议"><span class="nav-number">2.</span> <span class="nav-text">二、 TCP/IP协议</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#三、-分层"><span class="nav-number">3.</span> <span class="nav-text">三、 分层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#四、-应用层"><span class="nav-number">4.</span> <span class="nav-text">四、 应用层</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#五、-传输层"><span class="nav-number">5.</span> <span class="nav-text">五、 传输层</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-端口号"><span class="nav-number">5.1.</span> <span class="nav-text">1.端口号</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-端口号的确认"><span class="nav-number">5.2.</span> <span class="nav-text">2.端口号的确认</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-UDP"><span class="nav-number">5.3.</span> <span class="nav-text">3.UDP</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-TCP"><span class="nav-number">5.4.</span> <span class="nav-text">4.TCP</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-复用与分解"><span class="nav-number">5.5.</span> <span class="nav-text">5.复用与分解</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#6-TCP报文结构"><span class="nav-number">5.6.</span> <span class="nav-text">6.TCP报文结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#7-TCP三次握手"><span class="nav-number">5.7.</span> <span class="nav-text">7.TCP三次握手</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#8-TCP四次挥手"><span class="nav-number">5.8.</span> <span class="nav-text">8.TCP四次挥手</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#9-总结"><span class="nav-number">5.9.</span> <span class="nav-text">9.总结</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#为什么要三次握手，不是两次"><span class="nav-number">5.9.1.</span> <span class="nav-text">为什么要三次握手，不是两次</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#四次挥手-TIME-WAIT"><span class="nav-number">5.9.2.</span> <span class="nav-text">四次挥手 TIME_WAIT</span></a></li></ol></li></ol></li></ol></div>
             
 
           </div>
@@ -676,7 +687,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2022</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

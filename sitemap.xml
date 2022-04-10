@@ -2,30 +2,114 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
-    <loc>https://jiawea.github.io/2020/08/22/MySQL-Update/</loc>
+    <loc>https://jiawea.github.io/2021/12/10/kafka/</loc>
     
-    <lastmod>2020-11-21T04:44:17.292Z</lastmod>
+    <lastmod>2022-04-10T11:02:52.671Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jiawea.github.io/2020/11/21/Goroutine/</loc>
+    <loc>https://jiawea.github.io/2021/06/06/Py_pyenv/</loc>
     
-    <lastmod>2020-11-21T04:43:30.105Z</lastmod>
+    <lastmod>2021-07-11T07:18:00.642Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jiawea.github.io/2020/12/12/Etcd/</loc>
+    
+    <lastmod>2020-12-12T06:26:01.955Z</lastmod>
     
   </url>
   
   <url>
     <loc>https://jiawea.github.io/2020/06/26/TCP-IP/</loc>
     
-    <lastmod>2020-11-21T02:47:20.544Z</lastmod>
+    <lastmod>2020-12-04T07:10:48.099Z</lastmod>
     
   </url>
   
   <url>
-    <loc>https://jiawea.github.io/2019/09/23/asyncio/</loc>
+    <loc>https://jiawea.github.io/2019/09/25/Go_mod/</loc>
     
-    <lastmod>2020-11-21T02:46:44.254Z</lastmod>
+    <lastmod>2020-11-24T06:56:16.592Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jiawea.github.io/2020/11/21/Go_goroutine/</loc>
+    
+    <lastmod>2020-11-24T06:55:25.334Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jiawea.github.io/2020/11/22/Go_map/</loc>
+    
+    <lastmod>2020-11-24T06:55:09.955Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jiawea.github.io/2020/03/27/RPC/</loc>
+    
+    <lastmod>2020-11-24T02:18:47.640Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jiawea.github.io/2019/12/10/Docker_volume/</loc>
+    
+    <lastmod>2020-11-24T02:18:33.434Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jiawea.github.io/2019/10/14/Py_hidden_features/</loc>
+    
+    <lastmod>2020-11-24T02:18:01.349Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jiawea.github.io/2020/08/22/MySQL_update/</loc>
+    
+    <lastmod>2020-11-24T02:17:39.575Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jiawea.github.io/2020/05/08/MySQL_performance/</loc>
+    
+    <lastmod>2020-11-24T02:17:32.782Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jiawea.github.io/2020/04/11/Http_webSocket/</loc>
+    
+    <lastmod>2020-11-24T02:17:21.522Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jiawea.github.io/2019/10/17/Http_messages/</loc>
+    
+    <lastmod>2020-11-24T02:17:15.959Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jiawea.github.io/2019/09/23/Py_asyncio/</loc>
+    
+    <lastmod>2020-11-24T02:16:53.721Z</lastmod>
+    
+  </url>
+  
+  <url>
+    <loc>https://jiawea.github.io/interview/make_rocket.html</loc>
+    
+    <lastmod>2020-11-22T02:28:47.379Z</lastmod>
     
   </url>
   
@@ -72,13 +156,6 @@
   </url>
   
   <url>
-    <loc>https://jiawea.github.io/2020/05/08/MySQLPerformance/</loc>
-    
-    <lastmod>2020-11-19T02:48:55.535Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://jiawea.github.io/categories/index.html</loc>
     
     <lastmod>2020-11-19T02:44:24.286Z</lastmod>
@@ -107,51 +184,9 @@
   </url>
   
   <url>
-    <loc>https://jiawea.github.io/2019/12/10/Docker-volume/</loc>
-    
-    <lastmod>2020-06-10T01:29:14.152Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://jiawea.github.io/2019/10/14/HiddenFeaturesOfPython/</loc>
-    
-    <lastmod>2020-06-10T01:25:16.471Z</lastmod>
-    
-  </url>
-  
-  <url>
     <loc>https://jiawea.github.io/tags/chi-index.html</loc>
     
     <lastmod>2020-06-10T01:20:02.041Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://jiawea.github.io/2019/09/25/go_mod/</loc>
-    
-    <lastmod>2020-06-10T01:13:57.751Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://jiawea.github.io/2020/03/27/WHAT-IS-RPC/</loc>
-    
-    <lastmod>2020-06-10T01:13:22.706Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://jiawea.github.io/2019/10/17/HttpMessages/</loc>
-    
-    <lastmod>2020-06-10T01:12:38.190Z</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://jiawea.github.io/2020/04/11/Http_WebSocket/</loc>
-    
-    <lastmod>2020-06-10T01:12:24.656Z</lastmod>
     
   </url>
   
