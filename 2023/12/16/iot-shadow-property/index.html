@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/static/blogImg/ray.png?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="物模型,设备影子,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Ray's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="设备影子与物模型物模型物模型（Thing Specification Language）是为产品定义的数据模型，用于描述产品的功能。物模型将设备在云端从属性、服务和事件三个维度，分别描述了该实体是什么、能做什么、可以对外提供哪些信息。定义了物模型的这三个维度，即完成了产品功能的定义。">
+<meta name="keywords" content="物模型,设备影子">
+<meta property="og:type" content="article">
+<meta property="og:title" content="设备影子与物模型">
+<meta property="og:url" content="https://jiawea.github.io/2023/12/16/iot-shadow-property/index.html">
+<meta property="og:site_name" content="Ray&#39;s blog">
+<meta property="og:description" content="设备影子与物模型物模型物模型（Thing Specification Language）是为产品定义的数据模型，用于描述产品的功能。物模型将设备在云端从属性、服务和事件三个维度，分别描述了该实体是什么、能做什么、可以对外提供哪些信息。定义了物模型的这三个维度，即完成了产品功能的定义。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://jiawea.github.io/static/blogImg/iot-shadow-property.jpg">
+<meta property="og:image" content="https://jiawea.github.io/static/blogImg/device-report.jpg">
+<meta property="og:image" content="https://jiawea.github.io/static/blogImg/app-set.jpg">
+<meta property="og:image" content="https://jiawea.github.io/static/blogImg/device-get.jpg">
+<meta property="og:updated_time" content="2024-03-09T09:20:32.820Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="设备影子与物模型">
+<meta name="twitter:description" content="设备影子与物模型物模型物模型（Thing Specification Language）是为产品定义的数据模型，用于描述产品的功能。物模型将设备在云端从属性、服务和事件三个维度，分别描述了该实体是什么、能做什么、可以对外提供哪些信息。定义了物模型的这三个维度，即完成了产品功能的定义。">
+<meta name="twitter:image" content="https://jiawea.github.io/static/blogImg/iot-shadow-property.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://jiawea.github.io/2023/12/16/iot-shadow-property/">
+
+
+
+
+
+  <title>设备影子与物模型 | Ray's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Ray's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Coding...</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://jiawea.github.io/2023/12/16/iot-shadow-property/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ray Wong">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/static/blogImg/ray.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ray's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">设备影子与物模型</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2023-12-16T17:00:36+08:00">
+                2023-12-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/IoT/" itemprop="url" rel="index">
+                    <span itemprop="name">IoT</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="设备影子与物模型"><a href="#设备影子与物模型" class="headerlink" title="设备影子与物模型"></a>设备影子与物模型</h3><h4 id="物模型"><a href="#物模型" class="headerlink" title="物模型"></a>物模型</h4><p>物模型（Thing Specification Language）是为产品定义的数据模型，用于描述产品的功能。物模型将设备在云端从属性、服务和事件三个维度，分别描述了该实体是什么、能做什么、可以对外提供哪些信息。定义了物模型的这三个维度，即完成了产品功能的定义。</p>
+<a id="more"></a>
+<h4 id="设备影子"><a href="#设备影子" class="headerlink" title="设备影子"></a>设备影子</h4><p>设备影子（Device Shadow）是指在物联网设备与云端之间建立的一种虚拟设备模型，它保存了物联网设备的最新状态和控制信息，并提供了远程访问这些信息的能力。<br>简单来说，设备影子保存了设备即时状态。应用程序可对影子状态进行获取和设置。设备在线时，可直接获取到平台下发的设置指令；设备离线后，再次上线时可以主动查询影子进行配置。</p>
+<p>主要目的：</p>
+<ul>
+<li>缓存设备状态：应用程序可以方便地查看设备状态，即使设备下线。</li>
+<li>离线操作：设备影子允许应用程序和其他设备对设备状态进行操作，即使设备处于离线状态，等设备上线时主动获取期望状态进行更新。</li>
+<li>解耦：设备影子充当了设备和应用程序之间的缓冲层，使得应用程序无需直接与设备进行通信，从而降低了设备和应用程序之间的耦合度。</li>
+</ul>
+<h3 id="控制模型"><a href="#控制模型" class="headerlink" title="控制模型"></a>控制模型</h3><center><img src="/static/blogImg/iot-shadow-property.jpg" alt="控制模型"></center>
+
+
+<h4 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h4><p>数据以 JSON 文档形式存储，主要包含以下属性：</p>
+<ul>
+<li>state<ul>
+<li>desired 设备预期状态<br>应用程序设置的设备预期状态，可用于远程控制设备。</li>
+<li>reported 设备报告状态<br>记录了设备当前的属性和状态信息。应用程序读取文档的该部分以确定设备的上次报告状态。</li>
+</ul>
+</li>
+<li>metadata 元数据<br>存储 state 部分中每个属性更新的时间戳。</li>
+<li>version 文档版本<br>文档每次更新时，此版本号都会递增。用于确保正在更新的文档为最新版本。更新时版本号需要设置成大于影子系统的版本号，否则会更新失败。如果不进行校验版本号，则不要带上该字段。</li>
+</ul>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"state"</span>: &#123;</span><br><span class="line">        <span class="attr">"desired"</span>: &#123;</span><br><span class="line">            <span class="attr">"human_check_switch"</span>: <span class="number">1</span>,</span><br><span class="line">            <span class="attr">"move_track_switch"</span>: <span class="number">1</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">"reported"</span>: &#123;</span><br><span class="line">            <span class="attr">"human_check_switch"</span>: <span class="number">0</span>,</span><br><span class="line">            <span class="attr">"move_track_switch"</span>: <span class="number">0</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">"metadata"</span>: &#123;</span><br><span class="line">        <span class="attr">"desired"</span>: &#123;</span><br><span class="line">            <span class="attr">"human_check_switch"</span>: &#123;</span><br><span class="line">                <span class="attr">"timestamp"</span>: <span class="number">1689219987</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">"move_track_switch"</span>: &#123;</span><br><span class="line">                <span class="attr">"timestamp"</span>: <span class="number">1689219987</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">"reported"</span>: &#123;</span><br><span class="line">            <span class="attr">"human_check_switch"</span>: &#123;</span><br><span class="line">                <span class="attr">"timestamp"</span>: <span class="number">1689219980</span></span><br><span class="line">            &#125;,</span><br><span class="line">            <span class="attr">"move_track_switch"</span>: &#123;</span><br><span class="line">                <span class="attr">"timestamp"</span>: <span class="number">1689219980</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">"TIMESTAMP"</span>: <span class="number">1689219987</span>,</span><br><span class="line">    <span class="attr">"VERSION"</span>: <span class="number">1</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="存储引擎"><a href="#存储引擎" class="headerlink" title="存储引擎"></a>存储引擎</h3><p><strong>占用空间：以一个设备有 30 个属性为例，大约需要 4.2K 空间，30万个设备则需要 1.2G， 1百万个设备则需要 4G</strong></p>
+<p>对比了 Redis、MongoDB、COS</p>
+<ul>
+<li>MongoDB：需要引入新技术栈，有学习、维护成本</li>
+<li>COS：费用不低，心跳机制每天读写请求量好几亿</li>
+</ul>
+<p>考虑到目前现有的业务以及对存储引擎的读写操作并发要求不低、使用成本，决定使用 Redis 进行存储。</p>
+<h3 id="数据流"><a href="#数据流" class="headerlink" title="数据流"></a>数据流</h3><p>下面以摄像机设备为例，说明设备、设备影子以及应用程序之间的通信，主要介绍设备主动上报状态、应用程序（SDK）改变设备状态、设备主动获取影子内容，和设备、应用程序主动删除影子属性。</p>
+<h4 id="设备主动上报"><a href="#设备主动上报" class="headerlink" title="设备主动上报"></a>设备主动上报</h4><p>设备登录在线时，主动上报设备状态到影子。应用程序主动获取设备影子状态。</p>
+<center><img src="/static/blogImg/device-report.jpg" alt="控制模型"></center>
+
+<ol>
+<li>设备通过 Topic 上报最新状态到设备影子。如果携带 version ，影子系统则判断根据版本号决定是否更新，否则直接覆盖更新。</li>
+<li>设备影子文件更新后，设备影子会返回结果给设备，即发送消息到设备订阅的 Topic 。</li>
+<li>如果更新失败，设备则需要重新上报。</li>
+</ol>
+<h4 id="应用程序改变设备状态"><a href="#应用程序改变设备状态" class="headerlink" title="应用程序改变设备状态"></a>应用程序改变设备状态</h4><p>设备在线时，应用程序更新设备期望状态到影子，设备影子将指令下发至设备，如果设备下线，则当设备上线时主动获取影子信息，根据期望状态进行更新。</p>
+<center><img src="/static/blogImg/app-set.jpg" alt="控制模型"></center>
+
+<ol>
+<li>应用程序通过 HTTP 或者 MQTT 更改期望状态，开启人脸检测</li>
+<li>平台设备影子文件更新</li>
+<li>影子文件更新成功后，下发指令给设备（需要重试机制），设备订阅 Topic 获取期望状态进行更新。<ol>
+<li>设备在线：根据上面的 desired 部分的值，将人脸检测进行开启。（设备可根据时间戳决定是否更新）</li>
+<li>设备不在线：上线时主动获取设备影子期望状态进行更新</li>
+</ol>
+</li>
+<li>设备更新成功后，使用 Topic 上报最新状态到影子。影子更新成功后则返回结果给设备。（流程参考 3.5.1 设备上报状态）</li>
+<li>设备上报完最新状态后，影子系统可自动清空 desired </li>
+</ol>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">    <span class="attr">"state"</span>: &#123;</span><br><span class="line">        <span class="attr">"reported"</span>: &#123;</span><br><span class="line">            <span class="attr">"face_check_switch"</span>: <span class="number">0</span>,</span><br><span class="line">            <span class="attr">"voice_check_switch"</span>: <span class="number">0</span>,</span><br><span class="line">            <span class="attr">"move_track_switch"</span>: <span class="number">1</span></span><br><span class="line">        &#125;,</span><br><span class="line">        <span class="attr">"desired"</span>: &#123;</span><br><span class="line">            <span class="attr">"face_check_switch"</span>: <span class="number">1</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;, </span><br><span class="line">    <span class="attr">"metadata"</span>: &#123;</span><br><span class="line">        <span class="attr">"reported"</span>: &#123;</span><br><span class="line">            <span class="attr">"face_check_switch"</span>: &#123;</span><br><span class="line">                <span class="attr">"timestamp"</span>: <span class="number">1689303208</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, </span><br><span class="line">        <span class="attr">"desired"</span>: &#123;</span><br><span class="line">            <span class="attr">"face_check_switch"</span>: &#123;</span><br><span class="line">                <span class="attr">"timestamp"</span>: <span class="number">1689303210</span></span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;, </span><br><span class="line">    <span class="attr">"timestamp"</span>: <span class="number">1689303210</span>, </span><br><span class="line">    <span class="attr">"version"</span>: <span class="number">2</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="设备主动获取影子内容"><a href="#设备主动获取影子内容" class="headerlink" title="设备主动获取影子内容"></a>设备主动获取影子内容</h4><p>若应用程序发送指令时，设备离线。设备再次上线后，将主动获取设备影子内容。</p>
+<center><img src="/static/blogImg/device-get.jpg" alt="控制模型"></center>
+
+<ol>
+<li>主动发送以下消息到 Topic 中，请求获取设备影子中保存的最新状态。这里设备影子将只返回设备需要更新的期望状态。</li>
+<li>当设备影子收到消息后，发送最新状态到 Topic 。</li>
+<li>设备根据返回的数据决定是否更新设备当前状态，一旦更新设备自身状态，需要进行上报状态至设备影子，（流程参考 3.5.1 设备上报状态）</li>
+<li>设备影子接收上报的最新状态后更新 JSON 文档，并返回设备更新结果。</li>
+</ol>
+<h4 id="设备主动删除影子属性"><a href="#设备主动删除影子属性" class="headerlink" title="设备主动删除影子属性"></a>设备主动删除影子属性</h4><p>设备或应用需要删除影子则需要发送请求至设备影子，例如在重置设备时。</p>
+<ol>
+<li>设备发送删除命令到 Topic，将需要删除的属性值设置为 null 。</li>
+<li>设备影子接收到命令后，更新影子 JSON 文件，然后会返回结果给设备</li>
+</ol>
+<h4 id="版本控制"><a href="#版本控制" class="headerlink" title="版本控制"></a>版本控制</h4><blockquote>
+<p>以下客户端指的是 SDK 或设备</p>
+</blockquote>
+<p>设备影子服务支持在每个更新消息中进行版本控制。这意味着，每次更新影子时，JSON 文档的版本将会增加。这可以确保两件事情：</p>
+<ul>
+<li>如果客户端尝试使用旧版本号覆盖影子，则会更新失败。需要先重新获取影子信息，然后才能更新数据。</li>
+<li>如果消息的版本比客户端存储的版本低，客户端则可决定不对该消息执行操作。<br>客户端可以在影子文档中不包含版本以绕过版本匹配。</li>
+</ul>
+<p>为了减少因版本冲突更新失败的问题，在版本校验失败时进一步校验属性的更新时间戳，如果时间戳符合更新条件（即时间戳大于修改该属性<br>时间戳时），则忽略版本冲突问题。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/物模型/" rel="tag"># 物模型</a>
+          
+            <a href="/tags/设备影子/" rel="tag"># 设备影子</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2023/11/25/iot/" rel="next" title="物联网体系梳理">
+                <i class="fa fa-chevron-left"></i> 物联网体系梳理
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2024/03/09/clickhouse/" rel="prev" title="clickhouse时序数据应用">
+                clickhouse时序数据应用 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/static/blogImg/ray.png" alt="Ray Wong">
+            
+              <p class="site-author-name" itemprop="name">Ray Wong</p>
+              <p class="site-description motion-element" itemprop="description">Peace & Love</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">36</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JIAWea" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.cnblogs.com/ray-h/" target="_blank" title="cnblog">
+                      
+                        <i class="fa fa-fw fa-globe"></i>cnblog</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://wpa.qq.com/msgrd?v=3&uin=1552937000&site=qq&menu=yes" target="_blank" title="QQ">
+                      
+                        <i class="fa fa-fw fa-globe"></i>QQ</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:rayhwong@126.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#设备影子与物模型"><span class="nav-number">1.</span> <span class="nav-text">设备影子与物模型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#物模型"><span class="nav-number">1.1.</span> <span class="nav-text">物模型</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设备影子"><span class="nav-number">1.2.</span> <span class="nav-text">设备影子</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#控制模型"><span class="nav-number">2.</span> <span class="nav-text">控制模型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#数据结构"><span class="nav-number">2.1.</span> <span class="nav-text">数据结构</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#存储引擎"><span class="nav-number">3.</span> <span class="nav-text">存储引擎</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#数据流"><span class="nav-number">4.</span> <span class="nav-text">数据流</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#设备主动上报"><span class="nav-number">4.1.</span> <span class="nav-text">设备主动上报</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#应用程序改变设备状态"><span class="nav-number">4.2.</span> <span class="nav-text">应用程序改变设备状态</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设备主动获取影子内容"><span class="nav-number">4.3.</span> <span class="nav-text">设备主动获取影子内容</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设备主动删除影子属性"><span class="nav-number">4.4.</span> <span class="nav-text">设备主动删除影子属性</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#版本控制"><span class="nav-number">4.5.</span> <span class="nav-text">版本控制</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ray</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

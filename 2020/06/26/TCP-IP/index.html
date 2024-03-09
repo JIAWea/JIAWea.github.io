@@ -99,7 +99,7 @@
 <meta property="og:image" content="https://jiawea.github.io/static/network/baowen.png">
 <meta property="og:image" content="https://jiawea.github.io/static/network/3.png">
 <meta property="og:image" content="https://jiawea.github.io/static/network/4.png">
-<meta property="og:updated_time" content="2020-12-04T07:10:48.099Z">
+<meta property="og:updated_time" content="2024-03-09T06:38:39.330Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="TCP&#x2F;IP协议">
 <meta name="twitter:description" content="最近重新学习了计算机网络原理这一门课，趁着这机会，也对TCP/IP做一下总结吧。 一、 计算机网络体系结构分层  OSI模型和TCP/IP模型上有一些区别，每一层都是处理自己的事情，然后交给下一层处理。">
@@ -455,6 +455,10 @@
 <ul>
 <li>在四次挥手中，客户端发送<code>FIN</code>，服务端接收后返回<code>ACK</code>确认，在确认所有数据发送完毕后会，再次发送<code>FIN</code>给客户端，客户端响应发送<code>ACK</code>并进入<code>TIME_WAIT</code>状态，等待2MSL最大分段寿命（MSL, Maximum Segment Lifetime）后关闭连接。<br>如果没有<code>TIME_WAIT</code>状态，客户端响应的<code>ACK</code>包丢失的话，服务端就会重发<code>FIN</code>包，当客户端接收到一个没有经过<code>TCP</code>连接的包时，会响应一个<code>RST</code>重置包，导致服务端异常。所以<code>TIME_WAIT</code>是为了保证<code>TCP</code>的正常关闭。</li>
 <li>我们还知道，<code>TCP</code>报文传输过程中有可能不是顺序到达的，如果连接已经关闭了，此时客户端接收到了由于网络原因导致没有及时接收到服务端发送的数据包，客户端就会重新建立一个连接。所以<code>TIME_WAIT</code>的存在也是为了保证网络中迷失的数据包正常过期。</li>
+<li>为何一定要等2MSL？<ul>
+<li>如果不等，释放的端口可能会重连刚断开的服务器端口，这样依然存活在网络里的老的TCP报文可能与新TCP连接报文冲突，造成数据冲突。</li>
+</ul>
+</li>
 </ul>
 
       
@@ -577,7 +581,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">23</span>
+                  <span class="site-state-item-count">29</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -588,7 +592,7 @@
               
               <div class="site-state-item site-state-categories">
                 <a href="/categories/index.html">
-                  <span class="site-state-item-count">7</span>
+                  <span class="site-state-item-count">8</span>
                   <span class="site-state-item-name">分类</span>
                 </a>
               </div>
@@ -599,7 +603,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">31</span>
+                  <span class="site-state-item-count">36</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
@@ -687,7 +691,7 @@
 
     <footer id="footer" class="footer">
       <div class="footer-inner">
-        <div class="copyright">&copy; <span itemprop="copyrightYear">2022</span>
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2024</span>
   <span class="with-love">
     <i class="fa fa-user"></i>
   </span>

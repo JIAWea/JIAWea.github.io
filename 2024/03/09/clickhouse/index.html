@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/static/blogImg/ray.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/static/blogImg/ray.png?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="clickhouse,">
+
+
+
+
+
+  <link rel="alternate" href="/atom.xml" title="Ray's blog" type="application/atom+xml">
+
+
+
+
+
+
+<meta name="description" content="应用场景使用场景 绝大多数请求都是用于读访问的，数据一次写入，多次查询 数据需要以大批次（大于1000行）进行更新，而不是单行更新；或者根本没有更新操作 数据只是添加到数据库，没有必要修改 读取数据时，会从数据库中提取出大量的行，但只用到一小部分列 表很“宽”，即表中包含大量的列 查询频率相对较低（通常每台服务器每秒查询数百次或更少） 对于简单查询，允许大约50毫秒的延迟 列的值是比较小的数值和短">
+<meta name="keywords" content="clickhouse">
+<meta property="og:type" content="article">
+<meta property="og:title" content="clickhouse时序数据应用">
+<meta property="og:url" content="https://jiawea.github.io/2024/03/09/clickhouse/index.html">
+<meta property="og:site_name" content="Ray&#39;s blog">
+<meta property="og:description" content="应用场景使用场景 绝大多数请求都是用于读访问的，数据一次写入，多次查询 数据需要以大批次（大于1000行）进行更新，而不是单行更新；或者根本没有更新操作 数据只是添加到数据库，没有必要修改 读取数据时，会从数据库中提取出大量的行，但只用到一小部分列 表很“宽”，即表中包含大量的列 查询频率相对较低（通常每台服务器每秒查询数百次或更少） 对于简单查询，允许大约50毫秒的延迟 列的值是比较小的数值和短">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://jiawea.github.io/static/blogImg/ck-alter.png">
+<meta property="og:updated_time" content="2024-03-09T09:05:20.131Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="clickhouse时序数据应用">
+<meta name="twitter:description" content="应用场景使用场景 绝大多数请求都是用于读访问的，数据一次写入，多次查询 数据需要以大批次（大于1000行）进行更新，而不是单行更新；或者根本没有更新操作 数据只是添加到数据库，没有必要修改 读取数据时，会从数据库中提取出大量的行，但只用到一小部分列 表很“宽”，即表中包含大量的列 查询频率相对较低（通常每台服务器每秒查询数百次或更少） 对于简单查询，允许大约50毫秒的延迟 列的值是比较小的数值和短">
+<meta name="twitter:image" content="https://jiawea.github.io/static/blogImg/ck-alter.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://jiawea.github.io/2024/03/09/clickhouse/">
+
+
+
+
+
+  <title>clickhouse时序数据应用 | Ray's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Ray's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">Coding...</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br>
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="https://jiawea.github.io/2024/03/09/clickhouse/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="Ray Wong">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/static/blogImg/ray.png">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ray's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">clickhouse时序数据应用</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2024-03-09T15:30:30+08:00">
+                2024-03-09
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/数据库/" itemprop="url" rel="index">
+                    <span itemprop="name">数据库</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h3 id="应用场景"><a href="#应用场景" class="headerlink" title="应用场景"></a>应用场景</h3><h4 id="使用场景"><a href="#使用场景" class="headerlink" title="使用场景"></a>使用场景</h4><ul>
+<li>绝大多数请求都是用于读访问的，数据一次写入，多次查询</li>
+<li>数据需要以大批次（大于1000行）进行更新，而不是单行更新；或者根本没有更新操作</li>
+<li>数据只是添加到数据库，没有必要修改</li>
+<li>读取数据时，会从数据库中提取出大量的行，但只用到一小部分列</li>
+<li>表很“宽”，即表中包含大量的列</li>
+<li>查询频率相对较低（通常每台服务器每秒查询数百次或更少）</li>
+<li>对于简单查询，允许大约50毫秒的延迟</li>
+<li>列的值是比较小的数值和短字符串（例如，每个URL只有60个字节）</li>
+<li>在处理单个查询时需要高吞吐量（每台服务器每秒高达数十亿行）</li>
+</ul>
+<a id="more"></a>
+<ul>
+<li>不需要事务</li>
+<li>数据一致性要求较低</li>
+</ul>
+<h4 id="业务场景"><a href="#业务场景" class="headerlink" title="业务场景"></a>业务场景</h4><p>流量分析、精准营销、广告实时竞价、BI 报表分析、用户行为分析、日志分析、实时大屏等。</p>
+<ul>
+<li>数据仓库：ClickHouse 可以快速地处理大量的数据，支持高并发查询和复杂的聚合分析，是数据仓库和数据分析的首选工具。</li>
+<li>实时数据分析：ClickHouse 支持实时数据分析和实时查询，可以快速地处理实时数据流，是实时数据分析和实时监控的首选工具。</li>
+<li>时序数据存储：ClickHouse 支持时序数据存储和时序数据分析，可以快速地处理时间序列数据，是时序数据存储和时序数据分析的首选工具。</li>
+<li>数据可视化：ClickHouse 支持数据可视化和报表生成，可以快速地生成各种类型的报表和图表，是数据可视化和报表生成的首选工具。</li>
+</ul>
+<h4 id="缺点"><a href="#缺点" class="headerlink" title="缺点"></a>缺点</h4><ul>
+<li>没有完整的事务支持；</li>
+<li>不支持分词查询；</li>
+<li>缺少高频率，低延迟的修改或删除已存在数据的能力。仅能用于批量删除或修改数据；</li>
+<li>不擅长 join 操作；</li>
+<li>不支持高并发，官方建议qps为100。原因： ClickHouse 将数据划分为多个 partition，每个 partition 再进一步划分为多个 index_granularity(索引粒度)，然后通过多个 CPU核心分别处理其中的一部分来实现并行数据处理。在这种设计下， 单条 Query 就能利用整机所有 CPU。 极致的并行处理能力，极大的降低了查询延时。所以，ClickHouse 即使对于大量数据的查询也能够化整为零平行处理。但是有一个弊端就是对于单条查询使用多 cpu，就不利于同时并发多条查询。所以对于高 qps 的查询业务， ClickHouse 并不是强项。</li>
+</ul>
+<h4 id="优点"><a href="#优点" class="headerlink" title="优点"></a>优点</h4><ul>
+<li><p>查询快</p>
+<pre><code>利用存储引擎的特殊设计充分减少磁盘I/O对查询速度的影响。从用户提交一条SQL语句进行查询到最终输出结果的过程中，大量的时间是消耗在了磁盘I/O上，在很多情况下，I/O所占用的时间可以达到整个时间的90%以上。对存储引擎磁盘I/O的优化可以获得非常大的收益。ClickHouse的存储引擎设计中大量优化的目的也是为了减少磁盘I/O。
+</code></pre><ul>
+<li>列存</li>
+<li>预排序：在实现范围查找时，可以将大量的随机读转换为顺序读，从而有效提高I/O效率，降低范围查询时的I/O时间；</li>
+<li>数据压缩：可以减少读取和写入的数据量，从而减少I/O时间。</li>
+<li>向量化引擎，尽可能多地使用内置函数</li>
+<li>尽可能避免Join操作，可以用Spark替代</li>
+<li>ClickHouse 会在内存中进行 GROUP BY，并且使用 HashTable 装载数据。</li>
+<li>索引</li>
+<li>多线程和分布式</li>
+<li><p>算法：ClickHouse针对不同的应用场景，选择不同的算法：</p>
+<p>对于常量字符串查询，使用volnitsky算法<br>对于非常量字符串，使用CPU的向量化执行SIMD，进行暴力优化<br>对于字符串正则匹配，使用re2和hyperscan算法</p>
+</li>
+</ul>
+</li>
+<li><p>写入性能好</p>
+<ul>
+<li>列存</li>
+<li>数据压缩：能够有效地减少数据的存储空间，从而提高写入性能</li>
+<li>分布式架构</li>
+<li>多线程写入：ClickHouse采用多线程写入机制，能够同时处理多个写入请求，从而提高写入性能。</li>
+<li><p>LSM-Tree存储结构。<br>先明白一个测试数据：磁盘顺序读写和随机读写的性能差距大概是1千到5千倍之间<br>连续 I/O 顺序读写，磁头几乎不用换道，或者换道的时间很短，性能很高，比如0.03 * 2000 MB /s<br>随机 I/O 随机读写，会导致磁头不停地换道，造成效率的极大降低，0.03MB/s</p>
+<pre><code>ClickHouse中的MergeTree也是类LSM树的思想，日志结构合并树，但不是树，而是利用磁盘顺序读写能力，实现一个多层读写的存储结构 是一种分层，有序，面向磁盘的数据结构，核心思想是利用了磁盘批量的顺序写要远比随机写性能高出很多 大大提升了数据的写入能力。
+充分利用了磁盘顺序写的特性，实现高吞吐写能力，数据写入后定期在后台Compaction。在数据导入时全部是顺序append写，在后台合并时也是多个段merge sort后顺序写回磁盘。官方公开benchmark测试显示能够达到50MB-200MB/s的写入吞吐能力，按照每行100Byte估算，大约相当于50W-200W条/s的写入速度。
+</code></pre></li>
+</ul>
+</li>
+</ul>
+<h3 id="存储引擎"><a href="#存储引擎" class="headerlink" title="存储引擎"></a>存储引擎</h3><h4 id="MergeTree"><a href="#MergeTree" class="headerlink" title="MergeTree"></a>MergeTree</h4><p>MergeTree 表引擎主要用于海量数据分析，支持数据分区、主键索引、稀疏索引和数据 TTL 等。</p>
+<ul>
+<li>列式存储：只读取需要的列，节省 IO 和 CPU 资源。</li>
+<li>数据分区：按照日期或其他条件将数据分割成多个部分，方便管理和查询。</li>
+<li>稀疏主键索引：按照主键或排序键对数据进行排序和索引，加速范围查询。</li>
+<li>次级跳过索引：根据列的最小值和最大值等统计信息跳过不符合条件的数据，进一步提高查询效率。</li>
+<li>数据合并：后台定期将多个小的数据部分合并成一个大的数据部分，减少数据冗余和碎片</li>
+</ul>
+<p>MergeTree 引擎还有一些变种，如 ReplicatedMergeTree、AggregatingMergeTree 和 SummingMergeTree 等，它们在基本的 MergeTree 功能上增加了数据复制、数据聚合、数据求和等特性。</p>
+<h3 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h3><h4 id="一级索引"><a href="#一级索引" class="headerlink" title="一级索引"></a>一级索引</h4><p>一级索引是稀疏索引，意思就是说：每一段数据生成一条索引记录，而不是每一条数据都生成索引， 如果是每一条数据都生成索引，则是稠密索引。用一个形象的例子来说明：如果把MergeTree比作一本书，那么稀疏索引就好比是这本书的一级章节目录。一级章节目录不会具体对应到每个字的位置，只会记录每个章节的起始页码。</p>
+<p>MergeTree 的主键使用 PRIMARY KEY 定义，待主键定义之后，MergeTree 会依据 index_granularity 间隔（默认 8192 行），为数据表生成一级索引并保存至 primary.idx 文件内。<br>稀疏索引的优势是显而易见的，它仅需使用少量的索引标记就能够记录大量数据的区间位置信息，且数据量越大优势越为明显。以默认的索引粒度（8192）为例，MergeTree只需要12208行索引标记就能为1亿行数据记录提供索引。由于稀疏索引占用空间小，所以primary.idx内的索引数据常驻内存，取用速度自然极快。</p>
+<p>在 ClickHouse 中，一级索引常驻内存。总的来说：一级索引和标记文件一一对齐，两个 索引标记之间的数据，就是一个数据区间，在数据文件中，这个数据区间的所有数据，生成一个压缩数据块。每列压缩数据文件，存储每一列的数据，每一列字段都有独立的数据文件，每一列都有对应的标记文件，保存了列压缩文件中数据的偏移量信息，与稀疏索引对齐，又与压缩文件对应，建立了稀疏索引与数据文件的映射关系。不能常驻内存，使用LRU缓存策略加快其取用速度。</p>
+<p>需要注意的是：ClickHouse 的主键索引与 MySQL 等数据库不同，它并不用于去重，即便 primary key 相同的行，也可以同时存在于数据库中。 要想实现去重效果，需要结合具体的表引擎 ReplacingMergeTree、CollapsingMergeTree、VersionedCollapsingMergeTree 实现。</p>
+<h4 id="二级索引"><a href="#二级索引" class="headerlink" title="二级索引"></a>二级索引</h4><p>二级索引：又称之为跳数索引。目的和一级索引一样，是为了减少待搜寻的数据的范围。</p>
+<p>跳数索引的默认是关闭的，需要通过参数来开启，索引生成粒度由 granularity 控制，如果生成了二级索引，则会在分区目录下生成额外的：skp_idx_[Column].idx 与 skp_idx_[Column].mrk 文件。</p>
+<p>跳数索引的生成规则：按照特定规则每隔 granularity 个 index_granularity 条数据，就会生成一条跳数索引。比如 minmax 跳数索引，生成的是：granularity 个 index_granularity 条数据内的最大值最小值生成一条索引，如果将来需要针对构建二级索引的这个字段求最大值最小值，则可以帮助提高效率。</p>
+<p>跳数索引一共支持四种类型：minmax(最大最小)、set(去重集合)、 ngrambf_v1（ngram 分词布隆索引）和 tokenbf_v1（标点符号分词布隆索引），一张数据表支持同时声明多个跳数索引。</p>
+<h3 id="实际案例"><a href="#实际案例" class="headerlink" title="实际案例"></a>实际案例</h3><p>笔者在一次业务开发中，使用了 <code>clickhouse</code> 存储设备的时序数据，下面通过实际案例测试了一下 <code>clickhouse</code> 在此业务场景下的性能、压缩率。</p>
+<h4 id="集群配置"><a href="#集群配置" class="headerlink" title="集群配置"></a>集群配置</h4><p>集群高可用<br>内核版本：22.8.5.1<br>计算节点类型：标准型<br>计算节点规格：32核128GB<br>计算节点数量：2<br>计算节点存储：增强型SSD云硬盘500GB<br>ZK节点规格：4核16GB<br>ZK节点存储：增强型SSD云硬盘100GB<br>ZK节点数量：3</p>
+<h4 id="测试数据写入"><a href="#测试数据写入" class="headerlink" title="测试数据写入"></a>测试数据写入</h4><p>笔者自己写了一个伪造数据的脚本，以 <code>100</code> 万台设备为维度，总共写入了 <code>20</code> 亿条数据，平均每条数据将近 <code>1k</code>。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CREATE</span> <span class="keyword">DATABASE</span> <span class="keyword">IF</span> <span class="keyword">NOT</span> <span class="keyword">EXISTS</span> event_message <span class="keyword">ON</span> CLUSTER default_cluster;</span><br><span class="line"></span><br><span class="line"><span class="keyword">CREATE</span> <span class="keyword">TABLE</span> event_message.event <span class="keyword">ON</span> CLUSTER default_cluster (</span><br><span class="line">    <span class="string">`created_at`</span> DateTime <span class="keyword">DEFAULT</span> <span class="keyword">now</span>() <span class="keyword">COMMENT</span> <span class="string">'创建时间'</span> CODEC(Delta(<span class="number">1</span>), ZSTD(<span class="number">1</span>)),</span><br><span class="line">    <span class="string">`ts`</span> DateTime64(<span class="number">3</span>, <span class="string">'Asia/Shanghai'</span>) <span class="keyword">COMMENT</span> <span class="string">'事件上报时间'</span> CODEC(Delta(<span class="number">8</span>), ZSTD(<span class="number">1</span>)),</span><br><span class="line">    <span class="string">`uuid`</span> <span class="keyword">String</span>,</span><br><span class="line">    <span class="string">`event_id`</span> <span class="keyword">String</span> <span class="keyword">COMMENT</span> <span class="string">'事件id'</span> CODEC(ZSTD(<span class="number">1</span>)),</span><br><span class="line">    <span class="string">`app_id`</span> UInt64,</span><br><span class="line">    <span class="string">`user_id`</span> UInt64,</span><br><span class="line">    <span class="string">`type`</span> UInt8 <span class="keyword">COMMENT</span> <span class="string">'事件类型 1告警'</span> CODEC(ZSTD(<span class="number">1</span>)),</span><br><span class="line">    <span class="string">`event_type`</span> Int64 <span class="keyword">COMMENT</span> <span class="string">'上报数据内容中的事件类型'</span> CODEC(ZSTD(<span class="number">1</span>)),</span><br><span class="line">    <span class="string">`event_end`</span> UInt64 CODEC(Delta(<span class="number">1</span>), ZSTD(<span class="number">1</span>)),</span><br><span class="line">    <span class="string">`image_url`</span> <span class="keyword">String</span> CODEC(ZSTD(<span class="number">1</span>)),</span><br><span class="line">    <span class="string">`video_url`</span> <span class="keyword">String</span> CODEC(ZSTD(<span class="number">1</span>)),</span><br><span class="line">    <span class="string">`video_start`</span> UInt64 CODEC(Delta(<span class="number">1</span>), ZSTD(<span class="number">1</span>)),</span><br><span class="line">    <span class="string">`video_end`</span> UInt64 CODEC(Delta(<span class="number">1</span>), ZSTD(<span class="number">1</span>)),</span><br><span class="line">    <span class="string">`status`</span> UInt8 <span class="keyword">COMMENT</span> <span class="string">'状态 1未读 2已读 3删除'</span> CODEC(ZSTD(<span class="number">1</span>)),</span><br><span class="line">    <span class="string">`channel`</span> Nullable(Int64) <span class="keyword">COMMENT</span> <span class="string">'通道号'</span></span><br><span class="line">) <span class="keyword">ENGINE</span> = ReplicatedMergeTree(<span class="string">'/clickhouse/tables/&#123;layer&#125;-&#123;shard&#125;/event'</span>, <span class="string">'&#123;replica&#125;'</span>)</span><br><span class="line"><span class="keyword">PARTITION</span> <span class="keyword">BY</span> toYYYYMMDD(ts)</span><br><span class="line">PRIMARY <span class="keyword">KEY</span> (<span class="keyword">uuid</span>, ts) <span class="keyword">ORDER</span> <span class="keyword">BY</span> (<span class="keyword">uuid</span>, ts, event_type) TTL toDateTime(ts) + toIntervalMonth(<span class="number">3</span>) <span class="keyword">SETTINGS</span> index_granularity = <span class="number">2048</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>数据示例</li>
+</ul>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">ed069b3366a6 :) <span class="keyword">select</span> * <span class="keyword">from</span> event_message.event <span class="keyword">limit</span> <span class="number">1</span>\G</span><br><span class="line"></span><br><span class="line"><span class="keyword">Row</span> <span class="number">1</span>:</span><br><span class="line">──────</span><br><span class="line">created_at:  <span class="number">2024</span><span class="number">-01</span><span class="number">-11</span> <span class="number">17</span>:<span class="number">43</span>:<span class="number">39.689</span></span><br><span class="line">ts:          <span class="number">2023</span><span class="number">-12</span><span class="number">-13</span> <span class="number">14</span>:<span class="number">38</span>:<span class="number">25.003</span></span><br><span class="line"><span class="keyword">uuid</span>:        <span class="number">3301000000189</span>xxx</span><br><span class="line">event_id:    <span class="number">1702449505</span></span><br><span class="line">app_id:      <span class="number">9</span></span><br><span class="line">user_id:     <span class="number">114928</span></span><br><span class="line"><span class="keyword">type</span>:        <span class="number">1</span></span><br><span class="line">event_type:  <span class="number">3</span></span><br><span class="line">event_end:   <span class="number">1702449804</span></span><br><span class="line">image_url:   <span class="keyword">http</span>://s-cn-example-xxx.com/xxx...</span><br><span class="line">video_url:   <span class="keyword">http</span>://s-cn-example-xxx.com/xxx...</span><br><span class="line">video_start: <span class="number">1702449501</span></span><br><span class="line">video_end:   <span class="number">1702449505</span></span><br><span class="line"><span class="keyword">status</span>:      <span class="number">1</span></span><br><span class="line">channel:     <span class="number">0</span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>批量异步写入</li>
+</ul>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[ops@VM-0-45-tencentos event]$ ./ck_event_tool -addr "10.32.32.10:9000" -file ./d3301000000044702.csv -num 20000</span><br><span class="line">table: event_idx_20, sql len: 17415225 byte, AsyncInsert took 116454 microseconds</span><br><span class="line">table: event_idx_20, sql len: 17415162 byte, AsyncInsert took 51526 microseconds</span><br><span class="line">table: event_idx_20, sql len: 17415125 byte, AsyncInsert took 46664 microseconds</span><br><span class="line">table: event_idx_20, sql len: 17415135 byte, AsyncInsert took 52592 microseconds</span><br></pre></td></tr></table></figure>
+<p>写入速度能达到 <strong>200M/s</strong>，这点已经满足业务数据写入的需求了。</p>
+<center><img src="/static/blogImg/ck-alter.png" alt="监控"></center>
+
+
+<h3 id="基准测试"><a href="#基准测试" class="headerlink" title="基准测试"></a>基准测试</h3><h4 id="SQL-1"><a href="#SQL-1" class="headerlink" title="SQL 1"></a>SQL 1</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> *</span><br><span class="line"><span class="keyword">FROM</span></span><br><span class="line">(</span><br><span class="line">    <span class="keyword">SELECT</span></span><br><span class="line">        ts,</span><br><span class="line">        argMax(event_id, event_id) <span class="keyword">AS</span> event_id,</span><br><span class="line">        argMax(app_id, app_id) <span class="keyword">AS</span> app_id,</span><br><span class="line">        argMax(user_id, user_id) <span class="keyword">AS</span> user_id,</span><br><span class="line">        argMax(<span class="keyword">type</span>, <span class="keyword">type</span>) <span class="keyword">AS</span> <span class="keyword">type</span>,</span><br><span class="line">        argMax(event_type, event_type) <span class="keyword">AS</span> event_type,</span><br><span class="line">        argMax(event_end, event_end) <span class="keyword">AS</span> event_end,</span><br><span class="line">        argMax(image_url, image_url) <span class="keyword">AS</span> image_url,</span><br><span class="line">        argMax(video_url, video_url) <span class="keyword">AS</span> video_url,</span><br><span class="line">        argMax(video_start, video_start) <span class="keyword">AS</span> video_start,</span><br><span class="line">        argMax(video_end, video_end) <span class="keyword">AS</span> video_end,</span><br><span class="line">        argMax(<span class="keyword">status</span>, created_at) <span class="keyword">AS</span> <span class="keyword">status</span>,</span><br><span class="line">        argMax(channel, channel) <span class="keyword">AS</span> channel</span><br><span class="line">    <span class="keyword">FROM</span> event_message.event</span><br><span class="line">    <span class="keyword">WHERE</span> ((ts &gt;= <span class="string">'2024-01-24 00:00:00'</span>) <span class="keyword">AND</span> (ts &lt;= <span class="string">'2024-01-24 23:59:59'</span>)) <span class="keyword">AND</span> (<span class="keyword">uuid</span> = <span class="string">'3301000000044703'</span>)</span><br><span class="line">    <span class="keyword">GROUP</span> <span class="keyword">BY</span></span><br><span class="line">        ts,</span><br><span class="line">        <span class="keyword">uuid</span></span><br><span class="line">    <span class="keyword">HAVING</span> (<span class="keyword">status</span> != <span class="number">3</span>) <span class="keyword">AND</span> (image_url != <span class="string">''</span>)</span><br><span class="line">)</span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> ts <span class="keyword">DESC</span></span><br><span class="line"><span class="keyword">LIMIT</span> <span class="number">10</span></span><br><span class="line"></span><br><span class="line"><span class="number">10</span> <span class="keyword">rows</span> <span class="keyword">in</span> set. Elapsed: <span class="number">0.070</span> sec. Processed <span class="number">32.64</span> thousand <span class="keyword">rows</span>, <span class="number">22.19</span> MB (<span class="number">468.13</span> thousand <span class="keyword">rows</span>/s., <span class="number">318.19</span> MB/s.)</span><br></pre></td></tr></table></figure>
+<h4 id="SQL-2"><a href="#SQL-2" class="headerlink" title="SQL 2"></a>SQL 2</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> <span class="keyword">count</span>(*)</span><br><span class="line"><span class="keyword">FROM</span></span><br><span class="line">(</span><br><span class="line">    <span class="keyword">SELECT</span></span><br><span class="line">        ts,</span><br><span class="line">        argMax(event_type, event_type) <span class="keyword">AS</span> event_type,</span><br><span class="line">        argMax(image_url, image_url) <span class="keyword">AS</span> image_url,</span><br><span class="line">        argMax(channel, channel) <span class="keyword">AS</span> channel,</span><br><span class="line">        argMax(<span class="keyword">status</span>, created_at) <span class="keyword">AS</span> <span class="keyword">status</span></span><br><span class="line">    <span class="keyword">FROM</span> event_message.event</span><br><span class="line">    <span class="keyword">WHERE</span> ((ts &gt;= <span class="string">'2024-01-24 00:00:00'</span>) <span class="keyword">AND</span> (ts &lt;= <span class="string">'2024-01-24 23:59:59'</span>)) <span class="keyword">AND</span> (<span class="keyword">uuid</span> = <span class="string">'3301000000044703'</span>)</span><br><span class="line">    <span class="keyword">GROUP</span> <span class="keyword">BY</span></span><br><span class="line">        ts,</span><br><span class="line">        <span class="keyword">uuid</span></span><br><span class="line">    <span class="keyword">HAVING</span> <span class="keyword">status</span> <span class="keyword">IN</span> (<span class="number">1</span>,<span class="number">2</span>) <span class="keyword">AND</span> image_url != <span class="string">''</span></span><br><span class="line">)</span><br><span class="line"></span><br><span class="line"><span class="keyword">Query</span> <span class="keyword">id</span>: <span class="number">5726</span>ca46<span class="number">-564</span>f<span class="number">-4</span>ee3-bc6c<span class="number">-306</span>b97b02669</span><br><span class="line"></span><br><span class="line">┌─<span class="keyword">count</span>()─┐</span><br><span class="line">│    <span class="number">5549</span> │</span><br><span class="line">└─────────┘</span><br><span class="line"></span><br><span class="line"><span class="number">1</span> <span class="keyword">rows</span> <span class="keyword">in</span> set. Elapsed: <span class="number">0.036</span> sec. Processed <span class="number">32.64</span> thousand <span class="keyword">rows</span>, <span class="number">10.47</span> MB (<span class="number">899.62</span> thousand <span class="keyword">rows</span>/s., <span class="number">288.52</span> MB/s.)</span><br></pre></td></tr></table></figure>
+<h4 id="SQL-3"><a href="#SQL-3" class="headerlink" title="SQL 3"></a>SQL 3</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span> *</span><br><span class="line"><span class="keyword">FROM</span></span><br><span class="line">(</span><br><span class="line">    <span class="keyword">SELECT</span></span><br><span class="line">        ts,</span><br><span class="line">        argMax(event_type, event_type) <span class="keyword">AS</span> event_type,</span><br><span class="line">        argMax(image_url, image_url) <span class="keyword">AS</span> image_url,</span><br><span class="line">        argMax(<span class="keyword">status</span>, created_at) <span class="keyword">AS</span> <span class="keyword">status</span></span><br><span class="line">    <span class="keyword">FROM</span> event_message.event</span><br><span class="line">    <span class="keyword">WHERE</span> <span class="keyword">uuid</span> = <span class="string">'3301000000044704'</span></span><br><span class="line">    <span class="keyword">GROUP</span> <span class="keyword">BY</span></span><br><span class="line">        ts,</span><br><span class="line">        <span class="keyword">uuid</span></span><br><span class="line">    <span class="keyword">HAVING</span> (<span class="keyword">status</span> != <span class="number">3</span>) <span class="keyword">AND</span> (image_url != <span class="string">''</span>)</span><br><span class="line">)</span><br><span class="line"><span class="keyword">ORDER</span> <span class="keyword">BY</span> ts <span class="keyword">DESC</span></span><br><span class="line"><span class="keyword">LIMIT</span> <span class="number">1</span></span><br><span class="line"></span><br><span class="line"><span class="number">1</span> <span class="keyword">rows</span> <span class="keyword">in</span> set. Elapsed: <span class="number">0.114</span> sec. Processed <span class="number">350.34</span> thousand <span class="keyword">rows</span>, <span class="number">210.66</span> MB (<span class="number">3.08</span> million <span class="keyword">rows</span>/s., <span class="number">1.85</span> GB/s.)</span><br></pre></td></tr></table></figure>
+<h4 id="SQL-4"><a href="#SQL-4" class="headerlink" title="SQL 4"></a>SQL 4</h4><figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">SELECT</span></span><br><span class="line">    <span class="keyword">count</span>(*) <span class="keyword">AS</span> total,</span><br><span class="line">    toDate(ts) <span class="keyword">AS</span> d,</span><br><span class="line">    <span class="keyword">status</span></span><br><span class="line"><span class="keyword">FROM</span></span><br><span class="line">(</span><br><span class="line">    <span class="keyword">SELECT</span></span><br><span class="line">        ts,</span><br><span class="line">        argMax(event_type, event_type) <span class="keyword">AS</span> event_type,</span><br><span class="line">        argMax(image_url, image_url) <span class="keyword">AS</span> image_url,</span><br><span class="line">        argMax(<span class="keyword">status</span>, created_at) <span class="keyword">AS</span> <span class="keyword">status</span></span><br><span class="line">    <span class="keyword">FROM</span> event_message.event_idx_20</span><br><span class="line">    <span class="keyword">WHERE</span> ((ts &gt;= <span class="string">'2024-01-24 00:00:00'</span>) <span class="keyword">AND</span> (ts &lt;= <span class="string">'2024-01-27 23:59:59'</span>)) <span class="keyword">AND</span> (<span class="keyword">uuid</span> = <span class="string">'3301000000044703'</span>)</span><br><span class="line">    <span class="keyword">GROUP</span> <span class="keyword">BY</span></span><br><span class="line">        ts,</span><br><span class="line">        <span class="keyword">uuid</span></span><br><span class="line">    <span class="keyword">HAVING</span> (<span class="keyword">status</span> != <span class="number">3</span>) <span class="keyword">AND</span> (image_url != <span class="string">''</span>)</span><br><span class="line">)</span><br><span class="line"><span class="keyword">GROUP</span> <span class="keyword">BY</span></span><br><span class="line">    d,</span><br><span class="line">    <span class="keyword">status</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">Query</span> <span class="keyword">id</span>: <span class="number">28</span>bdb597<span class="number">-9</span>d81<span class="number">-4</span>db6<span class="number">-8</span>baa-cd5db4d11dea</span><br><span class="line"></span><br><span class="line">┌─total─┬──────────d─┬─<span class="keyword">status</span>─┐</span><br><span class="line">│     <span class="number">1</span> │ <span class="number">2024</span><span class="number">-01</span><span class="number">-27</span> │      <span class="number">2</span> │</span><br><span class="line">│  <span class="number">5549</span> │ <span class="number">2024</span><span class="number">-01</span><span class="number">-24</span> │      <span class="number">1</span> │</span><br><span class="line">│    <span class="number">73</span> │ <span class="number">2024</span><span class="number">-01</span><span class="number">-27</span> │      <span class="number">1</span> │</span><br><span class="line">│    <span class="number">93</span> │ <span class="number">2024</span><span class="number">-01</span><span class="number">-26</span> │      <span class="number">1</span> │</span><br><span class="line">│   <span class="number">183</span> │ <span class="number">2024</span><span class="number">-01</span><span class="number">-25</span> │      <span class="number">1</span> │</span><br><span class="line">└───────┴────────────┴────────┘</span><br><span class="line"></span><br><span class="line"><span class="number">5</span> <span class="keyword">rows</span> <span class="keyword">in</span> set. Elapsed: <span class="number">0.043</span> sec. Processed <span class="number">26.63</span> thousand <span class="keyword">rows</span>, <span class="number">6.19</span> MB (<span class="number">617.89</span> thousand <span class="keyword">rows</span>/s., <span class="number">143.74</span> MB/s.)</span><br></pre></td></tr></table></figure>
+<h4 id="基准测试结果"><a href="#基准测试结果" class="headerlink" title="基准测试结果"></a>基准测试结果</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker exec -it ck-server ClickHouse-benchmark -h 10.32.32.10 --user &quot;&quot; --password &quot;&quot; -c 50 --query &quot;&quot;</span><br></pre></td></tr></table></figure>
+<h5 id="1分片2节点、32核128GB、SSD云硬盘500GB"><a href="#1分片2节点、32核128GB、SSD云硬盘500GB" class="headerlink" title="1分片2节点、32核128GB、SSD云硬盘500GB"></a>1分片2节点、32核128GB、SSD云硬盘500GB</h5><p><code>index_granularity = 2048</code></p>
+<ul>
+<li>150并发</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">SQL</th>
+<th style="text-align:center">P50（秒）</th>
+<th style="text-align:center">P70（秒）</th>
+<th style="text-align:center">P80（秒）</th>
+<th style="text-align:center">P90（秒）</th>
+<th style="text-align:center">P95（秒）</th>
+<th style="text-align:center">P99（秒）</th>
+<th style="text-align:center">P99.9（秒）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">SQL 1</td>
+<td style="text-align:center">0.146</td>
+<td style="text-align:center">0.164</td>
+<td style="text-align:center">0.176</td>
+<td style="text-align:center">0.192</td>
+<td style="text-align:center">0.207</td>
+<td style="text-align:center">0.238</td>
+<td style="text-align:center">0.280</td>
+</tr>
+<tr>
+<td style="text-align:center">SQL 2</td>
+<td style="text-align:center">0.079</td>
+<td style="text-align:center">0.092</td>
+<td style="text-align:center">0.100</td>
+<td style="text-align:center">0.113</td>
+<td style="text-align:center">0.124</td>
+<td style="text-align:center">0.147</td>
+<td style="text-align:center">0.177</td>
+</tr>
+<tr>
+<td style="text-align:center">SQL 3</td>
+<td style="text-align:center">0.209</td>
+<td style="text-align:center">0.303</td>
+<td style="text-align:center">0.357</td>
+<td style="text-align:center">0.421</td>
+<td style="text-align:center">0.496</td>
+<td style="text-align:center">0.661</td>
+<td style="text-align:center">0.700</td>
+</tr>
+<tr>
+<td style="text-align:center">SQL 4</td>
+<td style="text-align:center">0.135</td>
+<td style="text-align:center">0.155</td>
+<td style="text-align:center">0.168</td>
+<td style="text-align:center">0.186</td>
+<td style="text-align:center">0.204</td>
+<td style="text-align:center">0.241</td>
+<td style="text-align:center">0.280</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>200并发</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">SQL</th>
+<th style="text-align:center">P50（秒）</th>
+<th style="text-align:center">P70（秒）</th>
+<th style="text-align:center">P80（秒）</th>
+<th style="text-align:center">P90（秒）</th>
+<th style="text-align:center">P95（秒）</th>
+<th style="text-align:center">P99（秒）</th>
+<th style="text-align:center">P99.9（秒）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">SQL 1</td>
+<td style="text-align:center">0.198</td>
+<td style="text-align:center">0.223</td>
+<td style="text-align:center">0.239</td>
+<td style="text-align:center">0.264</td>
+<td style="text-align:center">0.285</td>
+<td style="text-align:center">0.330</td>
+<td style="text-align:center">0.388</td>
+</tr>
+<tr>
+<td style="text-align:center">SQL 2</td>
+<td style="text-align:center">0.107</td>
+<td style="text-align:center">0.126</td>
+<td style="text-align:center">0.138</td>
+<td style="text-align:center">0.156</td>
+<td style="text-align:center">0.173</td>
+<td style="text-align:center">0.204</td>
+<td style="text-align:center">0.233</td>
+</tr>
+<tr>
+<td style="text-align:center">SQL 3</td>
+<td style="text-align:center">0.395</td>
+<td style="text-align:center">0.462</td>
+<td style="text-align:center">0.491</td>
+<td style="text-align:center">0.544</td>
+<td style="text-align:center">0.580</td>
+<td style="text-align:center">0.627</td>
+<td style="text-align:center">0.696</td>
+</tr>
+<tr>
+<td style="text-align:center">SQL 4</td>
+<td style="text-align:center">0.180</td>
+<td style="text-align:center">0.211</td>
+<td style="text-align:center">0.231</td>
+<td style="text-align:center">0.262</td>
+<td style="text-align:center">0.300</td>
+<td style="text-align:center">0.340</td>
+<td style="text-align:center">0.432</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>250并发</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">SQL</th>
+<th style="text-align:center">P50（秒）</th>
+<th style="text-align:center">P70（秒）</th>
+<th style="text-align:center">P80（秒）</th>
+<th style="text-align:center">P90（秒）</th>
+<th style="text-align:center">P95（秒）</th>
+<th style="text-align:center">P99（秒）</th>
+<th style="text-align:center">P99.9（秒）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">SQL 1</td>
+<td style="text-align:center">0.249</td>
+<td style="text-align:center">0.281</td>
+<td style="text-align:center">0.302</td>
+<td style="text-align:center">0.334</td>
+<td style="text-align:center">0.361</td>
+<td style="text-align:center">0.416</td>
+<td style="text-align:center">0.479</td>
+</tr>
+<tr>
+<td style="text-align:center">SQL 2</td>
+<td style="text-align:center">0.136</td>
+<td style="text-align:center">0.161</td>
+<td style="text-align:center">0.179</td>
+<td style="text-align:center">0.203</td>
+<td style="text-align:center">0.224</td>
+<td style="text-align:center">0.271</td>
+<td style="text-align:center">0.330</td>
+</tr>
+<tr>
+<td style="text-align:center">SQL 3</td>
+<td style="text-align:center">0.543</td>
+<td style="text-align:center">0.669</td>
+<td style="text-align:center">0.727</td>
+<td style="text-align:center">0.822</td>
+<td style="text-align:center">0.855</td>
+<td style="text-align:center">0.909</td>
+<td style="text-align:center">1.080</td>
+</tr>
+<tr>
+<td style="text-align:center">SQL 4</td>
+<td style="text-align:center">0.238</td>
+<td style="text-align:center">0.259</td>
+<td style="text-align:center">0.295</td>
+<td style="text-align:center">0.353</td>
+<td style="text-align:center">0.370</td>
+<td style="text-align:center">0.444</td>
+<td style="text-align:center">0.572</td>
+</tr>
+</tbody>
+</table>
+<h3 id="附录"><a href="#附录" class="headerlink" title="附录"></a>附录</h3><ul>
+<li>SQL 1<br>10 rows in set. Elapsed: 0.044 sec. Processed 10.24 thousand rows, 7.28 MB (232.86 thousand rows/s., 165.60 MB/s.)<ul>
+<li>150 并发<br>10.32.32.10:9000, queries: 2893, QPS: 855.413, RPS: 8759429.869, MiB/s: 5940.758, result RPS: 8554.131, result MiB/s: 7.089.</li>
+</ul>
+</li>
+<li>SQL 2<br>1 rows in set. Elapsed: 0.029 sec. Processed 10.24 thousand rows, 3.45 MB (357.13 thousand rows/s., 120.16 MB/s.)<ul>
+<li>200 并发<br>10.32.32.10:9000, queries: 7049, QPS: 1639.300, RPS: 16786436.834, MiB/s: 5386.267, result RPS: 1639.300, result MiB/s: 0.013.</li>
+</ul>
+</li>
+<li>SQL 4<br>5 rows in set. Elapsed: 0.049 sec. Processed 26.63 thousand rows, 6.19 MB (538.26 thousand rows/s., 125.22 MB/s.)<ul>
+<li>200 并发<br>10.32.32.10:9000, queries: 5020, QPS: 946.233, RPS: 25196304.941, MiB/s: 5589.924, result RPS: 4731.167, result MiB/s: 0.050.</li>
+</ul>
+</li>
+</ul>
+<h3 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h3><ul>
+<li>集群高可用副本同步，需要使用 ReplicatedMergeTree 引擎，否则不会同步消息</li>
+<li>并发查询限制，默认 100，并发越高查询效率越慢，相关参数：config.xml -&gt; max_concurrent_queries<ul>
+<li>目前调整至 300</li>
+</ul>
+</li>
+<li>查询内存限制，DB::Exception: Memory limit 相关参数：users.xml -&gt; max_memory_usage<ul>
+<li>目前调整至 25G</li>
+</ul>
+</li>
+<li>根据业务情况调整主键顺序以及主键索引颗粒度</li>
+<li>主键顺序按字段基数从小到大排序有利于压缩率</li>
+<li>主键索引顺序问题需要通过多主键索引进行调优，原理都是基于附加表进行数据查询</li>
+</ul>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/clickhouse/" rel="tag"># clickhouse</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2023/12/16/iot-shadow-property/" rel="next" title="设备影子与物模型">
+                <i class="fa fa-chevron-left"></i> 设备影子与物模型
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/static/blogImg/ray.png" alt="Ray Wong">
+            
+              <p class="site-author-name" itemprop="name">Ray Wong</p>
+              <p class="site-description motion-element" itemprop="description">Peace & Love</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">29</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-categories">
+                <a href="/categories/index.html">
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">分类</span>
+                </a>
+              </div>
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">36</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+            <div class="feed-link motion-element">
+              <a href="/atom.xml" rel="alternate">
+                <i class="fa fa-rss"></i>
+                RSS
+              </a>
+            </div>
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/JIAWea" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="https://www.cnblogs.com/ray-h/" target="_blank" title="cnblog">
+                      
+                        <i class="fa fa-fw fa-globe"></i>cnblog</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="http://wpa.qq.com/msgrd?v=3&uin=1552937000&site=qq&menu=yes" target="_blank" title="QQ">
+                      
+                        <i class="fa fa-fw fa-globe"></i>QQ</a>
+                  </span>
+                
+                  <span class="links-of-author-item">
+                    <a href="mailto:rayhwong@126.com" target="_blank" title="E-Mail">
+                      
+                        <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#应用场景"><span class="nav-number">1.</span> <span class="nav-text">应用场景</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#使用场景"><span class="nav-number">1.1.</span> <span class="nav-text">使用场景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#业务场景"><span class="nav-number">1.2.</span> <span class="nav-text">业务场景</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#缺点"><span class="nav-number">1.3.</span> <span class="nav-text">缺点</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#优点"><span class="nav-number">1.4.</span> <span class="nav-text">优点</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#存储引擎"><span class="nav-number">2.</span> <span class="nav-text">存储引擎</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#MergeTree"><span class="nav-number">2.1.</span> <span class="nav-text">MergeTree</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#索引"><span class="nav-number">3.</span> <span class="nav-text">索引</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#一级索引"><span class="nav-number">3.1.</span> <span class="nav-text">一级索引</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#二级索引"><span class="nav-number">3.2.</span> <span class="nav-text">二级索引</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#实际案例"><span class="nav-number">4.</span> <span class="nav-text">实际案例</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#集群配置"><span class="nav-number">4.1.</span> <span class="nav-text">集群配置</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#测试数据写入"><span class="nav-number">4.2.</span> <span class="nav-text">测试数据写入</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#基准测试"><span class="nav-number">5.</span> <span class="nav-text">基准测试</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#SQL-1"><span class="nav-number">5.1.</span> <span class="nav-text">SQL 1</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SQL-2"><span class="nav-number">5.2.</span> <span class="nav-text">SQL 2</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SQL-3"><span class="nav-number">5.3.</span> <span class="nav-text">SQL 3</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#SQL-4"><span class="nav-number">5.4.</span> <span class="nav-text">SQL 4</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#基准测试结果"><span class="nav-number">5.5.</span> <span class="nav-text">基准测试结果</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#1分片2节点、32核128GB、SSD云硬盘500GB"><span class="nav-number">5.5.1.</span> <span class="nav-text">1分片2节点、32核128GB、SSD云硬盘500GB</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#附录"><span class="nav-number">6.</span> <span class="nav-text">附录</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常见问题"><span class="nav-number">7.</span> <span class="nav-text">常见问题</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ray</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
