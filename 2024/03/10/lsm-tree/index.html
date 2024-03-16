@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Docker,volume,">
+  <meta name="keywords" content="LSM,存储引擎,">
 
 
 
@@ -81,20 +81,20 @@
 
 
 
-<meta name="description" content="数据卷默认情况下，在容器内创建的所有文件都存储在可写容器层上。这意味着：  当该容器不再存在时，数据将不会持久保存，并且如果另一个进程需要它，则可能很难从容器中取出数据。 容器的可写层与运行容器的主机紧密耦合。您不能轻易地将数据移动到其他地方。 写入容器的可写层需要 存储驱动程序来管理文件系统。存储驱动程序使用Linux内核提供联合文件系统。与使用直接写入主机文件系统的数据卷相比，这种额外的抽象降">
-<meta name="keywords" content="Docker,volume">
+<meta name="description" content="使用 LSM 树提升写入性能在了解 LSM 树存储引擎之前，我们先来说说磁盘的随机IO、顺序IO。通常数据库的数据最终都是持久化到磁盘上，而对磁盘的访问方式有两种，即：  随机IO随机 IO 就需要花费时间做昂贵的磁盘寻道，一般来说，它的读写效率要比顺序 IO 小好几个数量级，所以我们想要提升写入的性能就要尽量减少随机 IO 顺序IO以 MySQL 的 InnoDB 存储引擎来说，更新 binlo">
+<meta name="keywords" content="LSM,存储引擎">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Docker之数据卷volume">
-<meta property="og:url" content="https://jiawea.github.io/2019/12/10/Docker_volume/index.html">
+<meta property="og:title" content="基于LSM树的存储引擎">
+<meta property="og:url" content="https://jiawea.github.io/2024/03/10/lsm-tree/index.html">
 <meta property="og:site_name" content="Ray&#39;s blog">
-<meta property="og:description" content="数据卷默认情况下，在容器内创建的所有文件都存储在可写容器层上。这意味着：  当该容器不再存在时，数据将不会持久保存，并且如果另一个进程需要它，则可能很难从容器中取出数据。 容器的可写层与运行容器的主机紧密耦合。您不能轻易地将数据移动到其他地方。 写入容器的可写层需要 存储驱动程序来管理文件系统。存储驱动程序使用Linux内核提供联合文件系统。与使用直接写入主机文件系统的数据卷相比，这种额外的抽象降">
+<meta property="og:description" content="使用 LSM 树提升写入性能在了解 LSM 树存储引擎之前，我们先来说说磁盘的随机IO、顺序IO。通常数据库的数据最终都是持久化到磁盘上，而对磁盘的访问方式有两种，即：  随机IO随机 IO 就需要花费时间做昂贵的磁盘寻道，一般来说，它的读写效率要比顺序 IO 小好几个数量级，所以我们想要提升写入的性能就要尽量减少随机 IO 顺序IO以 MySQL 的 InnoDB 存储引擎来说，更新 binlo">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://jiawea.github.io/static/blogImg/DockerVolume.jpg">
-<meta property="og:updated_time" content="2020-11-24T02:18:33.434Z">
+<meta property="og:image" content="https://jiawea.github.io/static/blogImg/lsm-tree.jpg">
+<meta property="og:updated_time" content="2024-03-16T06:26:37.497Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Docker之数据卷volume">
-<meta name="twitter:description" content="数据卷默认情况下，在容器内创建的所有文件都存储在可写容器层上。这意味着：  当该容器不再存在时，数据将不会持久保存，并且如果另一个进程需要它，则可能很难从容器中取出数据。 容器的可写层与运行容器的主机紧密耦合。您不能轻易地将数据移动到其他地方。 写入容器的可写层需要 存储驱动程序来管理文件系统。存储驱动程序使用Linux内核提供联合文件系统。与使用直接写入主机文件系统的数据卷相比，这种额外的抽象降">
-<meta name="twitter:image" content="https://jiawea.github.io/static/blogImg/DockerVolume.jpg">
+<meta name="twitter:title" content="基于LSM树的存储引擎">
+<meta name="twitter:description" content="使用 LSM 树提升写入性能在了解 LSM 树存储引擎之前，我们先来说说磁盘的随机IO、顺序IO。通常数据库的数据最终都是持久化到磁盘上，而对磁盘的访问方式有两种，即：  随机IO随机 IO 就需要花费时间做昂贵的磁盘寻道，一般来说，它的读写效率要比顺序 IO 小好几个数量级，所以我们想要提升写入的性能就要尽量减少随机 IO 顺序IO以 MySQL 的 InnoDB 存储引擎来说，更新 binlo">
+<meta name="twitter:image" content="https://jiawea.github.io/static/blogImg/lsm-tree.jpg">
 
 
 
@@ -124,13 +124,13 @@
 
 
 
-  <link rel="canonical" href="https://jiawea.github.io/2019/12/10/Docker_volume/">
+  <link rel="canonical" href="https://jiawea.github.io/2024/03/10/lsm-tree/">
 
 
 
 
 
-  <title>Docker之数据卷volume | Ray's blog</title>
+  <title>基于LSM树的存储引擎 | Ray's blog</title>
   
 
 
@@ -257,7 +257,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="https://jiawea.github.io/2019/12/10/Docker_volume/">
+    <link itemprop="mainEntityOfPage" href="https://jiawea.github.io/2024/03/10/lsm-tree/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="Ray Wong">
@@ -274,7 +274,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Docker之数据卷volume</h1>
+          <h1 class="post-title" itemprop="name headline">基于LSM树的存储引擎</h1>
         
 
         <div class="post-meta">
@@ -286,8 +286,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-12-10T11:48:02+08:00">
-                2019-12-10
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2024-03-10T18:28:13+08:00">
+                2024-03-10
               </time>
             
 
@@ -309,8 +309,8 @@
               
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
-                  <a href="/categories/Docker/" itemprop="url" rel="index">
-                    <span itemprop="name">Docker</span>
+                  <a href="/categories/数据库/" itemprop="url" rel="index">
+                    <span itemprop="name">数据库</span>
                   </a>
                 </span>
 
@@ -346,47 +346,33 @@
       
 
       
-        <p><strong>数据卷</strong><br>默认情况下，在容器内创建的所有文件都存储在可写容器层上。这意味着：</p>
+        <h3 id="使用-LSM-树提升写入性能"><a href="#使用-LSM-树提升写入性能" class="headerlink" title="使用 LSM 树提升写入性能"></a>使用 LSM 树提升写入性能</h3><p>在了解 LSM 树存储引擎之前，我们先来说说磁盘的随机IO、顺序IO。通常数据库的数据最终都是持久化到磁盘上，而对磁盘的访问方式有两种，即：</p>
 <ul>
-<li>当该容器不再存在时，数据将不会持久保存，并且如果另一个进程需要它，则可能很难从容器中取出数据。</li>
-<li>容器的可写层与运行容器的主机紧密耦合。您不能轻易地将数据移动到其他地方。</li>
-<li>写入容器的可写层需要 存储驱动程序来管理文件系统。存储驱动程序使用Linux内核提供联合文件系统。与使用直接写入主机文件系统的数据卷相比，这种额外的抽象降低了性能 。</li>
+<li>随机IO<br>随机 IO 就需要花费时间做昂贵的磁盘寻道，一般来说，它的读写效率要比顺序 IO 小好几个数量级，所以我们想要提升写入的性能就要尽量减少随机 IO</li>
+<li>顺序IO<br>以 MySQL 的 InnoDB 存储引擎来说，更新 binlog、redolog、undolog 都是在做顺序 IO，而更新 datafile 和索引文件则是在做随机 IO，而为了减少随机 IO 的发生，关系数据库已经做了很多的优化，比如说写入时先写入内存，然后批量刷新到磁盘上，但是随机 IO 还是会发生。<br>索引在 InnoDB 引擎<br>中是以 B+ 树（上一节课提到了 B+ 树，你可以回顾一下）方式来组织的，而 MySQL 主键是聚簇索引（一种索引类型，数据与索引数据放在一起），既然数据和索引数据放在一起，那么在数据插入或者更新的时候，我们需要找到要插入的位置，再把数据写到特定的位置上，这就产生了随机的 IO。而且一旦发生了页分裂，就不可避免会做数据的移动，也会极大地损耗写入性能。</li>
 </ul>
-<center><img src="/static/blogImg/DockerVolume.jpg" alt="avatar"></center>
-
+<p>目前很多 <code>NoSQL</code> 数据库都在使用基于 <code>LSM</code> 树的存储引擎，例如 RocksDB、LevelDB、HBase 以及 Prometheus 等，这也是为什么这些数据库的写入性能很高的原因。</p>
 <a id="more"></a>
-<p>Docker为容器提供了两个选项来将文件存储在主机中，以便即使容器停止后文件也可以持久存储：</p>
-<ul>
-<li>bind mount（绑定安装）</li>
-<li>volume（数据卷）</li>
-</ul>
-<h3 id="volume："><a href="#volume：" class="headerlink" title="volume："></a>volume：</h3><p>是一个可供一个或多个容器使用的特殊目录，它绕过 UFS，可以提供很多有用的特性：</p>
-<ul>
-<li>数据卷 可以在容器之间共享和重用</li>
-<li>对 数据卷 的修改会立马生效</li>
-<li>对 数据卷 的更新，不会影响镜像</li>
-<li>数据卷 默认会一直存在，即使容器被删除</li>
-</ul>
-<h3 id="bind-mount："><a href="#bind-mount：" class="headerlink" title="bind mount："></a>bind mount：</h3><ul>
-<li>文件或目录由主机上的完整路径引用。</li>
-<li>该文件或目录不需要在Docker主机上已经存在。如果尚不存在，则按需创建。</li>
-<li>性能非常好，但是它们依赖于具有特定目录结构的主机文件系统。</li>
-</ul>
-<p><strong>注意：可以通过容器中运行的进程来更改主机文件系统 ，包括创建，修改或删除重要的系统文件或目录，存在安全隐患</strong></p>
-<h2 id="创建数据卷"><a href="#创建数据卷" class="headerlink" title="创建数据卷"></a>创建数据卷</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ docker volume create my-vol</span><br></pre></td></tr></table></figure>
-<p>查看所有的 数据卷<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ docker volume ls</span><br><span class="line">local               my-vol</span><br></pre></td></tr></table></figure></p>
-<p>在主机里使用以下命令可以查看指定 数据卷 的信息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ docker volume inspect my-vol</span><br><span class="line"></span><br><span class="line">[</span><br><span class="line">    &#123;</span><br><span class="line">        &quot;Driver&quot;: &quot;local&quot;,</span><br><span class="line">        &quot;Labels&quot;: &#123;&#125;,</span><br><span class="line">        &quot;Mountpoint&quot;: &quot;/var/lib/docker/volumes/my-vol/_data&quot;,</span><br><span class="line">        &quot;Name&quot;: &quot;my-vol&quot;,</span><br><span class="line">        &quot;Options&quot;: &#123;&#125;,</span><br><span class="line">        &quot;Scope&quot;: &quot;local&quot;</span><br><span class="line">    &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure></p>
-<h3 id="查看数据卷的具体信息"><a href="#查看数据卷的具体信息" class="headerlink" title="查看数据卷的具体信息"></a>查看数据卷的具体信息</h3><p>在主机里使用以下命令可以查看 web 容器的信息<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$ docker inspect web</span><br><span class="line">数据卷 信息在 &quot;Mounts&quot; Key 下面</span><br><span class="line"></span><br><span class="line">&quot;Mounts&quot;: [</span><br><span class="line">    &#123;</span><br><span class="line">        &quot;Type&quot;: &quot;volume&quot;,</span><br><span class="line">        &quot;Name&quot;: &quot;my-vol&quot;,</span><br><span class="line">        &quot;Source&quot;: &quot;/var/lib/docker/volumes/my-vol/_data&quot;,</span><br><span class="line">        &quot;Destination&quot;: &quot;/app&quot;,</span><br><span class="line">        &quot;Driver&quot;: &quot;local&quot;,</span><br><span class="line">        &quot;Mode&quot;: &quot;&quot;,</span><br><span class="line">        &quot;RW&quot;: true,</span><br><span class="line">        &quot;Propagation&quot;: &quot;&quot;</span><br><span class="line">    &#125;</span><br><span class="line">]</span><br></pre></td></tr></table></figure></p>
-<h3 id="启动一个挂载数据卷的容器"><a href="#启动一个挂载数据卷的容器" class="headerlink" title="启动一个挂载数据卷的容器"></a>启动一个挂载数据卷的容器</h3><p>在用 docker run 命令的时候，使用 <code>--mount</code> 标记或者直接使用<code>-v</code>来将 数据卷 挂载到容器里。在一次 docker run 中可以挂载多个 数据卷。</p>
-<p>下面创建一个名为 web 的容器，并加载一个 数据卷 到容器的 /webapp 目录。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ docker run -d -P \</span><br><span class="line">    --name web \</span><br><span class="line">    # -v my-vol:/wepapp \</span><br><span class="line">    --mount source=my-vol,target=/webapp \</span><br><span class="line">    training/webapp \</span><br><span class="line">    python app.py</span><br></pre></td></tr></table></figure></p>
-<h3 id="删除数据卷"><a href="#删除数据卷" class="headerlink" title="删除数据卷"></a>删除数据卷</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ docker volume rm my-vol</span><br></pre></td></tr></table></figure>
-<p>数据卷 是被设计用来持久化数据的，它的生命周期独立于容器，Docker 不会在容器被删除后自动删除 数据卷，并且也不存在垃圾回收这样的机制来处理没有任何容器引用的 数据卷。如果需要在删除容器的同时移除数据卷。可以在删除容器的时候使用<code>docker rm -v</code> 这个命令。</p>
-<p>无主的数据卷可能会占据很多空间，要清理请使用以下命令<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ docker volume prune</span><br></pre></td></tr></table></figure></p>
-<p>在删除容器的时候也可使用<code>-v</code>来删除数据卷或者在启动容器是加上<code>--rm</code>，如：</p>
-<ul>
-<li><code>docker rm -v 容器</code></li>
-<li><code>docker run --rm</code></li>
-</ul>
+<h3 id="什么是-LSM-树"><a href="#什么是-LSM-树" class="headerlink" title="什么是 LSM 树"></a>什么是 LSM 树</h3><p>LSM 树（Log-Structured Merge Tree）牺牲了一定的读性能来换取写入数据的高性能，这种方式全部都是以追加的形式将数据写入，不存在直接对数据删除和修改，所以这种结构很适合在写多读少的情况下。</p>
+<p>它的思想很简单，数据首先会写入到一个叫做 MemTable 的内存结构中，在 MemTable 中数据是按照写入的 Key 来排序的。为了防止 MemTable 里面的数据因为机器掉电或者重启而丢失，一般会通过写 Write Ahead Log 的方式将数据备份在磁盘上。</p>
+<p>MemTable 在累积到一定规模时，它会被刷新生成一个新的文件，我们把这个文件叫做 SSTable（Sorted String Table）。当 SSTable 达到一定数量时，我们会将这些 SSTable 合并，减少文件的数量，因为 SSTable 都是有序的，所以合并的速度也很快。SSTable 会以多个层级的方式保存在磁盘上。</p>
+<p>当从 LSM 树里面读数据时，我们首先从 MemTable 中查找数据，如果数据没有找到，再从 SSTable 中按层级往下一层层查找数据。因为存储的数据都是有序的，所以查找的效率是很高的，只是因为数据被拆分成多个 SSTable，所以读取的效率会低于 B+ 树索引。</p>
+<center><img src="/static/blogImg/lsm-tree.jpg" alt="LSM"></center>
+
+
+<blockquote>
+<p>写数据</p>
+</blockquote>
+<ol>
+<li>当有数据写入时，会先把数据记录在 <code>WAL Log</code> 中用来进行故障恢复。</li>
+<li>将数据写入内存 <code>MemTable</code> 中，为了维持有序性可以采用红黑树或者跳跃表相关的数据结构。</li>
+<li>当 <code>MemTable</code> 超过一定大小后会把它写到磁盘 <code>SSTable</code> 层中，此时会生成一个新的 <code>MemTable</code> 提供数据写入。</li>
+<li><code>SSTable</code> 在 <code>L0</code> 层中是没有进行合并的，所以会出现重复的 <code>key</code>，当每层的磁盘上的 <code>SSTable</code> 大小或个数到达阈值时则会进行合并，避免浪费空间，在 <code>L0</code> 层之后的数据不存在重复的 <code>Key</code>。</li>
+</ol>
+<h3 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h3><ol>
+<li>数据都是以追加写的形式进行增删改，所以存在冗余数据，因此通常会进行 <code>compact</code> 操作合并多个 <code>SSTable</code> 来清除冗余数据。</li>
+<li>如果查找的数据不存在，最坏的情况是会扫描所有 <code>SSTable</code> 文件，所以可以使用索引、布隆过滤器来优化查询速度。</li>
+</ol>
 
       
     </div>
@@ -404,9 +390,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/Docker/" rel="tag"># Docker</a>
+            <a href="/tags/LSM/" rel="tag"># LSM</a>
           
-            <a href="/tags/volume/" rel="tag"># volume</a>
+            <a href="/tags/存储引擎/" rel="tag"># 存储引擎</a>
           
         </div>
       
@@ -419,8 +405,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/11/08/Algorithm-SeqList/" rel="next" title="数据结构之顺序表">
-                <i class="fa fa-chevron-left"></i> 数据结构之顺序表
+              <a href="/2024/03/09/clickhouse/" rel="next" title="clickhouse时序数据应用">
+                <i class="fa fa-chevron-left"></i> clickhouse时序数据应用
               </a>
             
           </div>
@@ -428,10 +414,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2019/12/10/Algorithm-linked-list/" rel="prev" title="数据结构之链表">
-                数据结构之链表 <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>
@@ -600,7 +582,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#volume："><span class="nav-number">1.</span> <span class="nav-text">volume：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#bind-mount："><span class="nav-number">2.</span> <span class="nav-text">bind mount：</span></a></li></ol><li class="nav-item nav-level-2"><a class="nav-link" href="#创建数据卷"><span class="nav-number"></span> <span class="nav-text">创建数据卷</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#查看数据卷的具体信息"><span class="nav-number">1.</span> <span class="nav-text">查看数据卷的具体信息</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#启动一个挂载数据卷的容器"><span class="nav-number">2.</span> <span class="nav-text">启动一个挂载数据卷的容器</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#删除数据卷"><span class="nav-number">3.</span> <span class="nav-text">删除数据卷</span></a></li></ol></li></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#使用-LSM-树提升写入性能"><span class="nav-number">1.</span> <span class="nav-text">使用 LSM 树提升写入性能</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#什么是-LSM-树"><span class="nav-number">2.</span> <span class="nav-text">什么是 LSM 树</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#常见问题"><span class="nav-number">3.</span> <span class="nav-text">常见问题</span></a></li></ol></div>
             
 
           </div>
